@@ -65,9 +65,9 @@ On the resulting object, the following transformations are supported:
     operation, the optional ``quality`` parameter can be used to set the JPEG
     quality of the output
 
-The result of each of these operations is a new ``JPEGImage`` with the result
-of the operation. You can get get the output as a bytestring via the
-``as_blob()`` method or save it to a file with the ``save(fname)`` method.
+The result of each of these operations retuns the same object with the new,
+transformed data. You can get the data as a bytestring via the ``as_blob()``
+method or save it to a file with the ``save(fname)`` method.
 
 Note that due to this layout, operations can be chained, e.g. to create a
 rectangular 200x200 thumbnail from a 1200x2400 pixel JPEG::
