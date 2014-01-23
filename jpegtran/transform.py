@@ -9,9 +9,9 @@ class JPEGImage(object):
             raise Exception("Must initialize with either fname or blob.")
         if fname is not None:
             with open(fname, 'rb') as fp:
-                self.data = fp.read()
+                self.data = bytearray(fp.read())
         elif blob is not None:
-            self.data = blob
+            self.data = bytearray(blob)
         self._width = None
         self._height = None
 

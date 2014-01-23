@@ -191,7 +191,7 @@ def jpegtran_op(func):
         lib.jpeg_destroy_decompress(srcinfo)
 
         # Return output data
-        return ffi.buffer(out_data_p[0], out_data_len[0])[:]
+        return bytearray(ffi.buffer(out_data_p[0], out_data_len[0])[:])
     return wrapper
 
 
@@ -293,4 +293,4 @@ class Transformation(object):
         lib.epeg_memory_output_set(img, pdata, psize)
         lib.epeg_encode(img)
         lib.epeg_close(img)
-        return ffi.buffer(pdata[0], psize[0])[:]
+        return bytearray(ffi.buffer(pdata[0], psize[0])[:])
