@@ -5,13 +5,13 @@ import lib
 
 class JPEGImage(object):
     def __init__(self, fname=None, blob=None):
-        """ Initialize the image with either a filename or a string containing
-        the JPEG image data.
+        """ Initialize the image with either a filename or a string or
+        bytearray containing the JPEG image data.
 
         :param fname:   Filename of JPEG file
         :type fname:    str
         :param blob:    JPEG image data
-        :type blob:     str
+        :type blob:     str/bytearray
 
         """
         if (not fname and not blob) or (fname and blob):
@@ -95,10 +95,10 @@ class JPEGImage(object):
         """
         if angle % 90:
             raise ValueError("angle must be a multiple of 90.")
-        self.data = lib.Transformation(self.data).rotate(angle)
+        img = JPEGImage(blob=lib.Transformation(self.data).rotate(angle))
         # Set EXIF orientation to 'Normal' (== no rotation)
-        lib.Exif(self.data).orientation = 1
-        return self
+        lib.Exif(img.data).orientation = 1
+        return img
 
     def flip(self, direction):
         """ Flip the image in horizontal or vertical direction.
@@ -112,8 +112,7 @@ class JPEGImage(object):
         if direction not in ('horizontal', 'vertical'):
             raise ValueError("direction must be either 'vertical' or "
                              "'horizontal'")
-        self.data = lib.Transformation(self.data).flip(direction)
-        return self
+        return JPEGImage(blob=lib.Transformation(self.data).flip(direction))
 
     def transpose(self):
         """ Transpose the image (across  upper-right -> lower-left axis)
@@ -122,8 +121,7 @@ class JPEGImage(object):
         :rtype:         jpegtran.JPEGImage
 
         """
-        self.data = lib.Transformation(self.data).transpose()
-        return self
+        return JPEGImage(blob=lib.Transformation(self.data).transpose())
 
     def transverse(self):
         """ Transverse transpose the image (across  upper-left -> lower-right
@@ -133,8 +131,7 @@ class JPEGImage(object):
         :rtype:         jpegtran.JPEGImage
 
         """
-        self.data = lib.Transformation(self.data).transverse()
-        return self
+        return JPEGImage(blob=lib.Transformation(self.data).transverse())
 
     def crop(self, x, y, width, height):
         """ Crop a rectangular area from the image.
@@ -151,8 +148,8 @@ class JPEGImage(object):
         :rtype:         jpegtran.JPEGImage
 
         """
-        self.data = lib.Transformation(self.data).crop(x, y, width, height)
-        return self
+        return JPEGImage(blob=lib.Transformation(self.data)
+                         .crop(x, y, width, height))
 
     def downscale(self, width, height, quality=75):
         """ Downscale the image.
@@ -169,8 +166,8 @@ class JPEGImage(object):
         """
         if width > self.width or height > self.height:
             raise ValueError("jpegtran can only downscale JPEGs")
-        self.data = lib.Transformation(self.data).scale(width, height, quality)
-        return self
+        return JPEGImage(blob=lib.Transformation(self.data)
+                         .scale(width, height, quality))
 
     def save(self, fname):
         """ Save the image to a file
