@@ -40,7 +40,10 @@ class JPEGImage(object):
         :rtype:   str
 
         """
-        return lib.Exif(self.data).thumbnail
+        try:
+            return lib.Exif(self.data).thumbnail
+        except (ValueError, lib.ExifTagNotFound, lib.InvalidExifData):
+            return None
 
     @property
     def exif_orientation(self):
@@ -48,7 +51,10 @@ class JPEGImage(object):
 
         Property is read/write
         """
-        return lib.Exif(self.data).orientation
+        try:
+            return lib.Exif(self.data).orientation
+        except (lib.ExifTagNotFound, lib.InvalidExifData):
+            return None
 
     @exif_orientation.setter
     def exif_orientation(self, value):
@@ -93,8 +99,8 @@ class JPEGImage(object):
         :rtype:         jpegtran.JPEGImage
 
         """
-        if angle % 90:
-            raise ValueError("angle must be a multiple of 90.")
+        if angle not in (-90, 90, 180, 270):
+            raise ValueError("Angle must be -90, 90, 180 or 270.")
         img = JPEGImage(blob=lib.Transformation(self.data).rotate(angle))
         # Set EXIF orientation to 'Normal' (== no rotation)
         lib.Exif(img.data).orientation = 1
@@ -110,7 +116,7 @@ class JPEGImage(object):
 
         """
         if direction not in ('horizontal', 'vertical'):
-            raise ValueError("direction must be either 'vertical' or "
+            raise ValueError("Direction must be either 'vertical' or "
                              "'horizontal'")
         return JPEGImage(blob=lib.Transformation(self.data).flip(direction))
 
@@ -148,6 +154,10 @@ class JPEGImage(object):
         :rtype:         jpegtran.JPEGImage
 
         """
+        valid_crop = (x < self.width and y < self.height and
+                      x+width < self.width and y+height < self.height)
+        if not valid_crop:
+            raise ValueError("Crop parameters point outside of the image")
         return JPEGImage(blob=lib.Transformation(self.data)
                          .crop(x, y, width, height))
 

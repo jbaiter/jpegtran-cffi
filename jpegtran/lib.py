@@ -132,13 +132,22 @@ lib = ffi.verify("""
     include_dirs=["src"],
     libraries=["jpeg"])
 
+
+class InvalidExifData(Exception):
+    pass
+
+
+class ExifTagNotFound(Exception):
+    pass
+
+
 class Exif(object):
     def __init__(self, blob):
         self._buf = blob
         # EXIF struct starts after APP1 marker (2 bytes) and size (2 bytes)
         header = self._buf.index('\xff\xe1')+4
         if not self._buf[header:header+6] == 'Exif\x00\x00':
-            raise Exception("Invalid start of EXIF data")
+            raise InvalidExifData("Invalid start of EXIF data")
         # EXIF data begins after EXIF header (6 bytes)
         self._exif_start = header + 6
         alignstr = self._buf[self._exif_start:self._exif_start+2]
@@ -147,7 +156,8 @@ class Exif(object):
         elif alignstr == 'MM':
             self._motorola = True
         else:
-            raise Exception("Invalid byte alignment: {0}".format(alignstr))
+            raise InvalidExifData("Invalid byte alignment: {0}"
+                                  .format(alignstr))
         self._ifd0 = self._unpack('I', self._exif_start+4)+self._exif_start
 
     @property
@@ -166,7 +176,7 @@ class Exif(object):
     def thumbnail(self):
         compression = self._unpack('H', self._get_tag_offset(0x103)+8)
         if compression != 6:
-            raise Exception("Image does not contain a JPEG thumbnail")
+            raise ValueError("Image does not contain a JPEG thumbnail")
         offset = (self._exif_start +
                   self._unpack('I', self._get_tag_offset(0x201)+8))
         size = self._unpack('I', self._get_tag_offset(0x202)+8)
@@ -187,7 +197,8 @@ class Exif(object):
                 idx += 12
             p_ifd = self._unpack('I', idx)+self._exif_start
             if not p_ifd:
-                raise Exception("Could not find EXIF Tag {0}".format(tagnum))
+                raise ExifTagNotFound("Could not find EXIF Tag {0}"
+                                      .format(tagnum))
 
     def _thumbnail_offset(self):
         # Number of entries is 2 bytes, each entry is 12 bytes
