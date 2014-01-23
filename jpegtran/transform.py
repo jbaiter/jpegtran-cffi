@@ -12,21 +12,14 @@ class JPEGImage(object):
                 self.data = bytearray(fp.read())
         elif blob is not None:
             self.data = bytearray(blob)
-        self._width = None
-        self._height = None
 
     @property
     def width(self):
-        if self._width is None:
-            self._width, self._height = (lib.Transformation(self.data)
-                                         .get_dimensions())
-        return self._width
+        return lib.Transformation(self.data).get_dimensions()[0]
 
     @property
     def height(self):
-        if self._height is None:
-            self._width, self._height = (lib.Transformation(self.data)
-        return self._height
+        return lib.Transformation(self.data).get_dimensions()[1]
 
     @property
     def exif_thumbnail(self):
