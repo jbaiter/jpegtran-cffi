@@ -1,4 +1,6 @@
+import struct
 from functools import wraps
+
 from cffi import FFI
 ffi = FFI()
 
@@ -130,6 +132,85 @@ lib = ffi.verify("""
     include_dirs=["src"],
     libraries=["jpeg"])
 
+class Exif(object):
+    def __init__(self, blob):
+        self._buf = blob
+        # EXIF struct starts after APP1 marker (2 bytes) and size (2 bytes)
+        header = self._buf.index('\xff\xe1')+4
+        if not self._buf[header:header+6] == 'Exif\x00\x00':
+            raise Exception("Invalid start of EXIF data")
+        # EXIF data begins after EXIF header (6 bytes)
+        self._exif_start = header + 6
+        alignstr = self._buf[self._exif_start:self._exif_start+2]
+        if alignstr == 'II':
+            self._motorola = False
+        elif alignstr == 'MM':
+            self._motorola = True
+        else:
+            raise Exception("Invalid byte alignment: {0}".format(alignstr))
+        self._ifd0 = self._unpack('I', self._exif_start+4)+self._exif_start
+
+    @property
+    def orientation(self):
+        # Orientation data follows after tag (2 bytes), format (2 bytes) and
+        # number of components (4 bytes)
+        return self._unpack('H', self._get_tag_offset(0x112)+8)
+
+    @orientation.setter
+    def orientation(self, value):
+        if not 0 < value < 9:
+            raise ValueError("Orientation value must be between 1 and 8")
+        self._pack('H', self._get_tag_offset(0x112)+8, value)
+
+    @property
+    def thumbnail(self):
+        compression = self._unpack('H', self._get_tag_offset(0x103)+8)
+        if compression != 6:
+            raise Exception("Image does not contain a JPEG thumbnail")
+        offset = (self._exif_start +
+                  self._unpack('I', self._get_tag_offset(0x201)+8))
+        size = self._unpack('I', self._get_tag_offset(0x202)+8)
+        return self._buf[offset:offset+size]
+
+    def _get_tag_offset(self, tagnum):
+        # IFD0 pointer starts after alignment (2 bytes) and tag mark (2 bytes)
+        p_ifd = self._unpack('I', self._exif_start+4)+self._exif_start
+        while True:
+            num_entries = self._unpack('H', p_ifd)
+            # Start after number of entries (2 bytes)
+            idx = p_ifd + 2
+            for _ in xrange(num_entries):
+                tag_num = self._unpack('H', idx)
+                # Check if we're at the orientation tag
+                if tag_num == tagnum:
+                    return idx
+                idx += 12
+            p_ifd = self._unpack('I', idx)+self._exif_start
+            if not p_ifd:
+                raise Exception("Could not find EXIF Tag {0}".format(tagnum))
+
+    def _thumbnail_offset(self):
+        # Number of entries is 2 bytes, each entry is 12 bytes
+        ifd0_len = 2+self._unpack('H', self._ifd0)*12
+        ifd1 = self._unpack('I', self._ifd0+ifd0_len)+self._exif_start
+        num_entries = self._unpack('H', ifd1)
+        # Start after number of entries (2 bytes)
+        idx = ifd1+2
+        for _ in xrange(num_entries):
+            tag_num = self._unpack('H', idx)
+            if tag_num == 0x103:
+                return idx
+            idx += 12
+
+    def _unpack(self, fmt, offset):
+        fmt = ('>' if self._motorola else '<')+fmt
+        return struct.unpack_from(fmt, self._buf, offset)[0]
+
+    def _pack(self, fmt, offset, value):
+        fmt = ('>' if self._motorola else '<')+fmt
+        struct.pack_into(fmt, self._buf, offset, value)
+
+
 def get_transformoptions():
     # Initialize jpeg_transform_info struct
     options = ffi.new("jpeg_transform_info*")
@@ -163,7 +244,7 @@ def jpegtran_op(func):
         lib.jpeg_create_compress(dstinfo)
         lib.jpeg_mem_src(srcinfo, in_data_p,
                          ffi.cast("unsigned long", in_data_len))
-        lib.jcopy_markers_setup(srcinfo, lib.JCOPYOPT_COMMENTS)
+        lib.jcopy_markers_setup(srcinfo, lib.JCOPYOPT_ALL)
         lib.jpeg_read_header(srcinfo, int(True))
 
         # Call the wrapped function with the transformoption struct
@@ -178,7 +259,7 @@ def jpegtran_op(func):
         )
         lib.jpeg_mem_dest(dstinfo, out_data_p, out_data_len)
         lib.jpeg_write_coefficients(dstinfo, dst_coefs)
-        lib.jcopy_markers_execute(srcinfo, dstinfo, lib.JCOPYOPT_COMMENTS)
+        lib.jcopy_markers_execute(srcinfo, dstinfo, lib.JCOPYOPT_ALL)
 
         # Execute transformation
         lib.jtransform_execute_transform(srcinfo, dstinfo, src_coefs,

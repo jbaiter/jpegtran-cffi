@@ -26,13 +26,28 @@ class JPEGImage(object):
     def height(self):
         if self._height is None:
             self._width, self._height = (lib.Transformation(self.data)
-                                         .get_dimensions())
         return self._height
+
+    @property
+    def exif_thumbnail(self):
+        return lib.Exif(self.data).thumbnail
+
+    @property
+    def exif_orientation(self):
+        return lib.Exif(self.data).orientation
+
+    @exif_orientation.setter
+    def exif_orientation(self, value):
+        if not 0 < value < 9:
+            raise ValueError("Orientation value must be between 1 and 8")
+        lib.Exif(self.data).orientation = value
 
     def rotate(self, angle):
         if angle % 90:
             raise ValueError("angle must be a multiple of 90.")
         self.data = lib.Transformation(self.data).rotate(angle)
+        # Set EXIF orientation to 'Normal' (== no rotation)
+        lib.Exif(self.data).orientation = 1
         return self
 
     def flip(self, direction):
