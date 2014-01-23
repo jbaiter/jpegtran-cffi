@@ -1,3 +1,2 @@
-from transform import JPEGImage
-
+from jpegtran.transform import JPEGImage
 __all__ = [JPEGImage]

@@ -1,5 +1,10 @@
 import struct
+import sys
 from functools import wraps
+
+PY2 = sys.version_info < (3, 0)
+if PY2:
+    range = xrange
 
 from cffi import FFI
 ffi = FFI()
@@ -145,15 +150,15 @@ class Exif(object):
     def __init__(self, blob):
         self._buf = blob
         # EXIF struct starts after APP1 marker (2 bytes) and size (2 bytes)
-        header = self._buf.index('\xff\xe1')+4
-        if not self._buf[header:header+6] == 'Exif\x00\x00':
+        header = self._buf.index(b'\xff\xe1')+4
+        if not self._buf[header:header+6] == b'Exif\x00\x00':
             raise InvalidExifData("Invalid start of EXIF data")
         # EXIF data begins after EXIF header (6 bytes)
         self._exif_start = header + 6
         alignstr = self._buf[self._exif_start:self._exif_start+2]
-        if alignstr == 'II':
+        if alignstr == b'II':
             self._motorola = False
-        elif alignstr == 'MM':
+        elif alignstr == b'MM':
             self._motorola = True
         else:
             raise InvalidExifData("Invalid byte alignment: {0}"
@@ -189,7 +194,7 @@ class Exif(object):
             num_entries = self._unpack('H', p_ifd)
             # Start after number of entries (2 bytes)
             idx = p_ifd + 2
-            for _ in xrange(num_entries):
+            for _ in range(num_entries):
                 tag_num = self._unpack('H', idx)
                 # Check if we're at the orientation tag
                 if tag_num == tagnum:
@@ -207,7 +212,7 @@ class Exif(object):
         num_entries = self._unpack('H', ifd1)
         # Start after number of entries (2 bytes)
         idx = ifd1+2
-        for _ in xrange(num_entries):
+        for _ in range(num_entries):
             tag_num = self._unpack('H', idx)
             if tag_num == 0x103:
                 return idx
@@ -215,7 +220,10 @@ class Exif(object):
 
     def _unpack(self, fmt, offset):
         fmt = ('>' if self._motorola else '<')+fmt
-        return struct.unpack_from(fmt, self._buf, offset)[0]
+        if sys.version_info < (2, 7):
+            return struct.unpack_from(fmt, buffer(self._buf), offset)[0]
+        else:
+            return struct.unpack_from(fmt, self._buf, offset)[0]
 
     def _pack(self, fmt, offset, value):
         fmt = ('>' if self._motorola else '<')+fmt

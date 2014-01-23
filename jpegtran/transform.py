@@ -1,6 +1,6 @@
 import re
 
-import lib
+import jpegtran.lib as lib
 
 
 class JPEGImage(object):
