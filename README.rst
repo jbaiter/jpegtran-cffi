@@ -5,7 +5,7 @@ jpegtran-cffi
 A Python package for blazingly fast JPEG transformations. Compared to other,
 more general purpose image processing libraries like `wand-py`_  or
 `PIL/Pillow`_, the performance gain can, depending on the transformation, be
-somewhere in the range of 150% to 500% (see *Benchmarks*). In addition to
+somewhere in the range of 80% to 375% (see *Benchmarks*). In addition to
 that, all operations except for scaling are lossless, since the image is not
 being re-compressed in the process. This is due to the fact that all
 transformation operations work directly with the JPEG data.
@@ -14,6 +14,10 @@ This is achieved by using multiple C routines from Carsten Haitzler's `epeg`_
 (scaling) and *jpegtran* from the Independent JPEG Group's `libjpeg` library
 (for all other operations). These routines are called from Python through the
 `CFFI` library, i.e. no external commands are launched via `subprocess`.
+
+The package also includes rudimentary support for getting and setting the EXIF
+orientation tag, automatically transforming the image according to it and
+obtaining the JFIF thumbnail image.
 
 .. _wand-py: http://wand-py.org
 .. _PIL/PIllow: http://pillow.readthedocs.org
@@ -38,14 +42,16 @@ From source::
 
 Usage
 =====
-Before each transformation, you have to create a ``JPEGImage`` object. This
-can be either initialized with a filename (``fname``) or a bytestring with
-the JPEG data (``blob``).
+Before each transformation, you have to create a ``JPEGImage`` object. This can
+be either initialized with a filename (``fname``) or a bytestring or bytearray
+with the JPEG data (``blob``).
 
 On the resulting object, the following transformations are supported:
 
 ``rotate(angle)``
-    Rotate by -90, 90, 180 or 270 degrees
+    Rotate by -90, 90, 180 or 270 degrees. If the image has an EXIF orientation
+    tag, it will automatically be set to ``1`` (i.e no rotation) in the
+    resulting image.
 
 ``flip(direction)``
     Flip either in ``vertical`` or ``horizontal`` direction
@@ -60,16 +66,24 @@ On the resulting object, the following transformations are supported:
     Crop a rectangle with ``width`` and ``height`` starting from ``x`` pixels
     on the right and ``y`` pixels from the top
 
-``scale(width, height, quality=75)``
+``exif_autotransform()``
+    Automatically transform the image according to its EXIF orientation tag.
+    This will apply one or more of the above methods to transform the image so
+    its image data corresponds to the tag value. In the resulting image,  the
+    tag will be set to ``1``.
+
+``downscale(width, height, quality=75)``
     Resize the image to ``width`` by ``height`` pixels. Since this is a lossy
     operation, the optional ``quality`` parameter can be used to set the JPEG
-    quality of the output
+    quality of the output. Note that this method can only be used to downscale
+    images, upscaling is not supported.
 
-The result of each of these operations retuns the same object with the new,
-transformed data. You can get the data as a bytestring via the ``as_blob()``
-method or save it to a file with the ``save(fname)`` method.
 
-Note that due to this layout, operations can be chained, e.g. to create a
+The result of each of these operations retuns a new ``JPEGImage`` object with
+the transformed data. You can get the data as a bytestring via the
+``as_blob()`` method or save it to a file with the ``save(fname)`` method.
+
+Note that this allows operations to be chained, e.g. to create a
 rectangular 200x200 thumbnail from a 1200x2400 pixel JPEG::
 
     thumb_data = (JPEGImage(fname='original.jpg')
@@ -114,19 +128,19 @@ Package versions:
 - wand-py: 0.3.5
 - jpegtran-cffi: 0.1
 
-+-----------------------+------------+------------+---------------+
-|       Operation       |  wand-py   |    PIL     | jpegtran-cffi |
-+=======================+============+============+===============+
-|   scale to 250x150    | 102ms/299% | 90ms/262%  |    34ms/0%    |
-+-----------------------+------------+------------+---------------+
-|   rotate by 90° CW    | 317ms/224% | 258ms/182% |    141ms/0%   |
-+-----------------------+------------+------------+---------------+
-| Crop 500x500 from 0,0 | 190ms/475% | 92ms/230%  |    40ms/0%    |
-+-----------------------+------------+------------+---------------+
++-----------------------+------------+-----------+---------------+
+|       Operation       |  wand-py   |    PIL    | jpegtran-cffi |
++=======================+============+===========+===============+
+|   scale to 250x150    | 102ms/200% | 90ms/165% |     34ms      |
++-----------------------+------------+-----------+---------------+
+|   rotate by 90° CW    | 317ms/124% | 258ms/82% |     141ms     |
++-----------------------+------------+-----------+---------------+
+| Crop 500x500 from 0,0 | 190ms/375% | 92ms/130% |     40ms      |
++-----------------------+------------+-----------+---------------+
 
-Both wand-py and PIL were run with the fastest scaling algorithm available,
-for wand-py this meant using ``Image.sample`` instead of ``Image.resize``
-and for PIL the nearest-neighbour filter was used for the ``Image.resize`` call.
+Both wand-py and PIL were run with the fastest scaling algorithm available, for
+wand-py this meant using ``Image.sample`` instead of ``Image.resize`` and for
+PIL the nearest-neighbour filter was used for the ``Image.resize`` call.
 
 
 License
