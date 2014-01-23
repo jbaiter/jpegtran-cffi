@@ -198,6 +198,18 @@ class Transformation(object):
     def __init__(self, blob):
         self._data = blob
 
+    def get_dimensions(self):
+        width = ffi.new("int*")
+        height = ffi.new("int*")
+        in_data_len = len(self._data)
+        in_data_p = ffi.new("unsigned char[]", in_data_len)
+        inbuf = ffi.buffer(in_data_p, in_data_len)
+        inbuf[:] = self._data
+        img = lib.epeg_memory_open(in_data_p, in_data_len)
+        lib.epeg_size_get(img, width, height)
+        lib.epeg_close(img)
+        return (width[0], height[0])
+
     @jpegtran_op
     def grayscale(self):
         options = get_transformoptions()

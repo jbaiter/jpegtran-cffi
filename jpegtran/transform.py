@@ -12,6 +12,22 @@ class JPEGImage(object):
                 self.data = fp.read()
         elif blob is not None:
             self.data = blob
+        self._width = None
+        self._height = None
+
+    @property
+    def width(self):
+        if self._width is None:
+            self._width, self._height = (lib.Transformation(self.data)
+                                         .get_dimensions())
+        return self._width
+
+    @property
+    def height(self):
+        if self._height is None:
+            self._width, self._height = (lib.Transformation(self.data)
+                                         .get_dimensions())
+        return self._height
 
     def rotate(self, angle):
         if angle % 90:
