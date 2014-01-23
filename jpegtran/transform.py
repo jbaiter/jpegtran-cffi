@@ -53,7 +53,7 @@ class JPEGImage(object):
         """
         try:
             return lib.Exif(self.data).orientation
-        except (lib.ExifTagNotFound, lib.InvalidExifData):
+        except (ValueError, lib.ExifTagNotFound, lib.InvalidExifData):
             return None
 
     @exif_orientation.setter
@@ -103,7 +103,8 @@ class JPEGImage(object):
             raise ValueError("Angle must be -90, 90, 180 or 270.")
         img = JPEGImage(blob=lib.Transformation(self.data).rotate(angle))
         # Set EXIF orientation to 'Normal' (== no rotation)
-        lib.Exif(img.data).orientation = 1
+        if img.exif_orientation not in (None, 1):
+            img.exif_orientation = 1
         return img
 
     def flip(self, direction):
