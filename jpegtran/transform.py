@@ -83,7 +83,9 @@ class JPEGImage(object):
         self.data = lib.Transformation(self.data).crop(x, y, width, height)
         return self
 
-    def scale(self, width, height, quality=75):
+    def downscale(self, width, height, quality=75):
+        if width > self.width or height > self.height:
+            raise ValueError("jpegtran can only downscale JPEGs")
         self.data = lib.Transformation(self.data).scale(width, height, quality)
         return self
 
