@@ -42,6 +42,27 @@ class JPEGImage(object):
             raise ValueError("Orientation value must be between 1 and 8")
         lib.Exif(self.data).orientation = value
 
+    def exif_autotransform(self):
+        orient = self.exif_orientation
+        if orient is None:
+            raise Exception("Could not find EXIF orientation")
+        elif orient == 1:
+            return self
+        elif orient == 2:
+            return self.flip('horizontal')
+        elif orient == 3:
+            return self.rotate(180)
+        elif orient == 4:
+            return self.flip('vertical')
+        elif orient == 5:
+            return self.transpose()
+        elif orient == 6:
+            return self.rotate(90)
+        elif orient == 7:
+            return self.transverse()
+        elif orient == 8:
+            return self.rotate(270)
+
     def rotate(self, angle):
         if angle % 90:
             raise ValueError("angle must be a multiple of 90.")
