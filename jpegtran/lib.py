@@ -1,3 +1,4 @@
+from functools import wraps
 from cffi import FFI
 ffi = FFI()
 
@@ -128,113 +129,149 @@ lib = ffi.verify("""
     include_dirs=["src"],
     libraries=["jpeg"])
 
+def get_transformoptions():
+    # Initialize jpeg_transform_info struct
+    options = ffi.new("jpeg_transform_info*")
+    options.transform = lib.JXFORM_NONE
+    options.perfect = int(False)
+    options.trim = int(False)
+    options.force_grayscale = int(False)
+    options.crop = int(False)
+    return options
+
+
+def jpegtran_op(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        # Setup variables
+        in_data_len = len(self._data)
+        in_data_p = ffi.new("unsigned char[]", in_data_len)
+        inbuf = ffi.buffer(in_data_p, in_data_len)
+        inbuf[:] = self._data
+        srcerr = ffi.new("struct jpeg_error_mgr*")
+        dsterr = ffi.new("struct jpeg_error_mgr*")
+        out_data_p = ffi.new("unsigned char**")
+        out_data_len = ffi.new("unsigned long*")
+        srcinfo = ffi.new("struct jpeg_decompress_struct*")
+        srcinfo.err = lib.jpeg_std_error(srcerr)
+        dstinfo = ffi.new("struct jpeg_compress_struct*")
+        dstinfo.err = lib.jpeg_std_error(dsterr)
+
+        # Read input
+        lib.jpeg_create_decompress(srcinfo)
+        lib.jpeg_create_compress(dstinfo)
+        lib.jpeg_mem_src(srcinfo, in_data_p,
+                         ffi.cast("unsigned long", in_data_len))
+        lib.jcopy_markers_setup(srcinfo, lib.JCOPYOPT_COMMENTS)
+        lib.jpeg_read_header(srcinfo, int(True))
+
+        # Call the wrapped function with the transformoption struct
+        transformoption = func(self, *args, **kwargs)
+
+        # Prepare transformation
+        lib.jtransform_request_workspace(srcinfo, transformoption)
+        src_coefs = lib.jpeg_read_coefficients(srcinfo)
+        lib.jpeg_copy_critical_parameters(srcinfo, dstinfo)
+        dst_coefs = lib.jtransform_adjust_parameters(
+            srcinfo, dstinfo, src_coefs, transformoption
+        )
+        lib.jpeg_mem_dest(dstinfo, out_data_p, out_data_len)
+        lib.jpeg_write_coefficients(dstinfo, dst_coefs)
+        lib.jcopy_markers_execute(srcinfo, dstinfo, lib.JCOPYOPT_COMMENTS)
+
+        # Execute transformation
+        lib.jtransform_execute_transform(srcinfo, dstinfo, src_coefs,
+                                         transformoption)
+
+        # Clean up
+        lib.jpeg_finish_compress(dstinfo)
+        lib.jpeg_destroy_compress(dstinfo)
+        lib.jpeg_finish_decompress(srcinfo)
+        lib.jpeg_destroy_decompress(srcinfo)
+
+        # Return output data
+        return ffi.buffer(out_data_p[0], out_data_len[0])[:]
+    return wrapper
+
 
 class Transformation(object):
     def __init__(self, blob):
-        self.in_data_p = ffi.new("unsigned char[]", len(blob))
-        inbuf = ffi.buffer(self.in_data_p, len(blob))
-        inbuf[:] = blob
-        self.in_data_len = len(inbuf)
+        self._data = blob
 
-    def _prepare(self):
-        self.srcerr = ffi.new("struct jpeg_error_mgr*")
-        self.dsterr = ffi.new("struct jpeg_error_mgr*")
-        self.out_data_p = ffi.new("unsigned char**")
-        self.out_data_len = ffi.new("unsigned long*")
-        self.srcinfo = ffi.new("struct jpeg_decompress_struct*")
-        self.srcinfo.err = lib.jpeg_std_error(self.srcerr)
-        self.dstinfo = ffi.new("struct jpeg_compress_struct*")
-        self.dstinfo.err = lib.jpeg_std_error(self.dsterr)
-        self.transformoption = ffi.new("jpeg_transform_info*")
-        self.transformoption.transform = lib.JXFORM_NONE
-        self.transformoption.perfect = int(False)
-        self.transformoption.trim = int(False)
-        self.transformoption.force_grayscale = int(False)
-        self.transformoption.crop = int(False)
-        lib.jpeg_create_decompress(self.srcinfo)
-        lib.jpeg_create_compress(self.dstinfo)
-        lib.jpeg_mem_src(self.srcinfo, self.in_data_p,
-                         ffi.cast("unsigned long", self.in_data_len))
-        lib.jcopy_markers_setup(self.srcinfo, lib.JCOPYOPT_COMMENTS)
-        lib.jpeg_read_header(self.srcinfo, int(True))
-
-    def _transform(self, perfect=False, trim=False):
-        #import ipdb; ipdb.set_trace()
-        self.transformoption.perfect = int(perfect)
-        self.transformoption.trim = int(trim)
-        lib.jtransform_request_workspace(self.srcinfo, self.transformoption)
-        self.src_coefs = lib.jpeg_read_coefficients(self.srcinfo)
-        lib.jpeg_copy_critical_parameters(self.srcinfo, self.dstinfo)
-        self.dst_coefs = lib.jtransform_adjust_parameters(
-            self.srcinfo, self.dstinfo, self.src_coefs, self.transformoption
-        )
-        lib.jpeg_mem_dest(self.dstinfo, self.out_data_p, self.out_data_len)
-        lib.jpeg_write_coefficients(self.dstinfo, self.dst_coefs)
-        lib.jcopy_markers_execute(self.srcinfo, self.dstinfo,
-                                  lib.JCOPYOPT_COMMENTS)
-        lib.jtransform_execute_transform(self.srcinfo, self.dstinfo,
-                                         self.src_coefs,
-                                         self.transformoption)
-        lib.jpeg_finish_compress(self.dstinfo)
-        lib.jpeg_destroy_compress(self.dstinfo)
-        lib.jpeg_finish_decompress(self.srcinfo)
-        lib.jpeg_destroy_decompress(self.srcinfo)
-        return ffi.buffer(self.out_data_p[0], self.out_data_len[0])[:]
-
+    @jpegtran_op
     def grayscale(self):
-        self._prepare()
-        self.transformoption.transform = lib.JXFORM_NONE
-        self.transformoption.force_grayscale = int(True)
-        return self._transform()
+        options = get_transformoptions()
+        options.transform = lib.JXFORM_NONE
+        options.force_grayscale = int(True)
+        return options
 
+    @jpegtran_op
     def rotate(self, angle, perfect=False, trim=False):
-        self._prepare()
+        options = get_transformoptions()
+        options.perfect = int(perfect)
+        options.trim = int(trim)
         if angle == 90:
-            self.transformoption.transform = lib.JXFORM_ROT_90
+            options.transform = lib.JXFORM_ROT_90
         elif angle == 180:
-            self.transformoption.transform = lib.JXFORM_ROT_180
+            options.transform = lib.JXFORM_ROT_180
         elif angle in (-90, 270):
-            self.transformoption.transform = lib.JXFORM_ROT_270
+            options.transform = lib.JXFORM_ROT_270
         else:
-            raise ValueError("Invalid angle, must be -90, 90, 180 or 2170")
-        return self._transform(perfect, trim)
+            raise ValueError("Invalid angle, must be -90, 90, 180 or 270")
+        return options
 
+    @jpegtran_op
     def flip(self, direction, perfect=False, trim=False):
-        self._prepare()
+        options = get_transformoptions()
+        options.perfect = int(perfect)
+        options.trim = int(trim)
         if direction == 'vertical':
-            self.transformoption.transform = lib.JXFORM_FLIP_V
+            options.transform = lib.JXFORM_FLIP_V
         elif direction == 'horizontal':
-            self.transformoption.transform = lib.JXFORM_FLIP_H
+            options.transform = lib.JXFORM_FLIP_H
         else:
             raise ValueError("Invalid direction, must be 'vertical' or "
                              "'horizontal'")
-        return self._transform(perfect, trim)
+        return options
 
+    @jpegtran_op
     def transpose(self, perfect=False, trim=False):
-        self._prepare()
-        self.transformoption.transform = lib.JXFORM_TRANSPOSE
-        return self._transform(perfect, trim)
+        options = get_transformoptions()
+        options.perfect = int(perfect)
+        options.trim = int(trim)
+        options.transform = lib.JXFORM_TRANSPOSE
+        return options
 
+    @jpegtran_op
     def transverse(self, perfect=False, trim=False):
-        self._prepare()
-        self.transformoption.transform = lib.JXFORM_TRANSVERSE
-        return self._transform(perfect, trim)
+        options = get_transformoptions()
+        options.perfect = int(perfect)
+        options.trim = int(trim)
+        options.transform = lib.JXFORM_TRANSVERSE
+        return options
 
+    @jpegtran_op
     def crop(self, x, y, width, height, perfect=False, trim=False):
-        self._prepare()
-        self.transformoption.crop = int(True)
-        self.transformoption.crop_width = width
-        self.transformoption.crop_width_set = lib.JCROP_FORCE
-        self.transformoption.crop_height = height
-        self.transformoption.crop_height_set = lib.JCROP_FORCE
-        self.transformoption.crop_xoffset = x
-        self.transformoption.crop_xoffset_set = lib.JCROP_POS
-        self.transformoption.crop_yoffset = y
-        self.transformoption.crop_yoffset_set = lib.JCROP_POS
-        return self._transform(perfect, trim)
+        options = get_transformoptions()
+        options.perfect = int(perfect)
+        options.trim = int(trim)
+        options.crop = int(True)
+        options.crop_width = width
+        options.crop_width_set = lib.JCROP_FORCE
+        options.crop_height = height
+        options.crop_height_set = lib.JCROP_FORCE
+        options.crop_xoffset = x
+        options.crop_xoffset_set = lib.JCROP_POS
+        options.crop_yoffset = y
+        options.crop_yoffset_set = lib.JCROP_POS
+        return options
 
     def scale(self, width, height, quality=75):
-        img = lib.epeg_memory_open(self.in_data_p, self.in_data_len)
+        in_data_len = len(self._data)
+        in_data_p = ffi.new("unsigned char[]", in_data_len)
+        inbuf = ffi.buffer(in_data_p, in_data_len)
+        inbuf[:] = self._data
+        img = lib.epeg_memory_open(in_data_p, in_data_len)
         lib.epeg_decode_size_set(img, width, height)
         lib.epeg_quality_set(img, quality)
 
