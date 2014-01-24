@@ -91,6 +91,23 @@ For more details, refer to the `API Reference`_.
 
 .. _API Reference: http://jpegtran-cffi.readthedocs.org/en/latest/#api-reference
 
+Benchmarks
+==========
+All operations were done on a 3.4GHz i7-3770 with 16GiB of RAM and a 7200rpm
+HDD with the following 2560x1920 8bit RGB JPEG:
+
+http://upload.wikimedia.org/wikipedia/commons/8/82/Mandel_zoom_05_tail_part.jpg
+
+.. figure:: http://jpegtran-cffi.readthedocs.org/en/latest/_images/benchmark.png
+
+    Both wand-py and PIL were run with the fastest scaling algorithm available,
+    for wand-py this meant using ``Image.sample`` instead of ``Image.resize``
+    and for PIL the nearest-neighbour filter was used for the ``Image.resize``
+    call.
+
+    Benchmark source: https://gist.github.com/jbaiter/8596064
+
+
 License
 =======
 The MIT License (MIT)
