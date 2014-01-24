@@ -148,7 +148,7 @@ class JPEGImage(object):
         :param y:       vertical coordinate of upper-left corner
         :type y:        int
         :param width:   width of area
-        :type width.    int
+        :type width:    int
         :param height:  height of area
         :type height:   int
         :return:        cropped image
