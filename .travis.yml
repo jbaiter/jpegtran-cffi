@@ -1,4 +1,4 @@
-python: 2.7
+language: python
 before_install:
     - sudo apt-get install libjpeg8-dev
     - sudo pip install tox cffi
