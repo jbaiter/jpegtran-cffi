@@ -220,7 +220,7 @@ class Exif(object):
 
     def _unpack(self, fmt, offset):
         fmt = ('>' if self._motorola else '<')+fmt
-        if sys.version_info < (2, 7):
+        if PY2:
             return struct.unpack_from(fmt, buffer(self._buf), offset)[0]
         else:
             return struct.unpack_from(fmt, self._buf, offset)[0]
