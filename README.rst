@@ -1,6 +1,9 @@
 =============
 jpegtran-cffi
 =============
+.. image:: https://travis-ci.org/jbaiter/jpegtran-cffi.png?branch=master
+   :target: https://travis-ci.org/jbaiter/jpegtran-cffi
+   :alt: Build status
 
 A Python package for blazingly fast JPEG transformations. Compared to other,
 more general purpose image processing libraries like `wand-py`_  or
