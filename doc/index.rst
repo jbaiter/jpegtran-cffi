@@ -2,10 +2,10 @@
 jpegtran-cffi
 =============
 
-jpegtran-cffi is a Python package for blazingly fast JPEG transformations.
+`jpegtran-cffi`_ is a Python package for fast JPEG transformations.
 Compared to other, more general purpose image processing libraries like
 `wand-py`_  or `PIL/Pillow`_, transformations are generally more than twice as
-fast (see `benchmarks_`). In addition, all operations except for scaling are
+fast (see :ref:`benchmarks`). In addition, all operations except for scaling are
 lossless, since the image is not being re-compressed in the process. This is
 due to the fact that all transformation operations work directly with the JPEG
 data.
@@ -24,18 +24,24 @@ project, where a large number of images from digital cameras had to be
 prepared for display by a Raspberry Pi. With the Pi's rather slow ARMv6
 processor, both Wand and PIL were too slow to be usable.
 
+Supported Python versions are CPython 2.6, 2.7 and 3.3, as well as PyPy.
+
+The source code is under the MIT license and can be found on GitHub_.
+
+.. _jpegtran_cffi: http://github.com/jbaiter/jpegtran-cffi
 .. _wand-py: http://wand-py.org
 .. _PIL/PIllow: http://pillow.readthedocs.org
 .. _epeg library: https://github.com/mattes/epeg
 .. _libjpeg: http://en.wikipedia.org/wiki/Libjpeg
 .. _CFFI: http://cffi.readthedocs.orgs
 .. _spreads: http://spreads.readthedocs.org
+.. _GitHub: http://github.com/jbaiter/jpegtran-cffi
 
 Requirements
 ============
 - CPython 2.6, 2.7, 3.3 or PyPy
 - cffi
-- libjpeg8 with headers (earlier versions will not work)
+- **libjpeg8** with headers (earlier versions will not work)
 
 Installation
 ============
@@ -43,6 +49,7 @@ Installation
 ::
 
     $ pip install jpegtran-cffi
+
 
 Usage
 =====
