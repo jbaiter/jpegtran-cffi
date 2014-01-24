@@ -3,6 +3,33 @@ import os, sys
 
 sys.path.insert(0, '../')
 
+
+class Mock(object):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
+    @classmethod
+    def __getattr__(cls, name):
+        print "Getting mock: ", name
+        if name in ('__file__', '__path__'):
+            return '/dev/null'
+        # Special case for CFFI
+        elif name == 'FFI':
+            return Mock()
+        elif name[0] == name[0].upper():
+            mockType = type(name, (), {})
+            mockType.__module__ = __name__
+            return mockType
+        else:
+            return Mock()
+
+MOCK_MODULES = ['cffi']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = Mock()
+
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
 
 templates_path = ['_templates']
