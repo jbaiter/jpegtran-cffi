@@ -1,7 +1,7 @@
 python: 2.7
 before_install:
     - sudo apt-get install libjpeg8-dev
-    - sudo pip install tox
+    - sudo pip install tox cffi
 env:
     - TOX_ENV=py26
     - TOX_ENV=py27
