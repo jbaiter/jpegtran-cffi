@@ -33,7 +33,7 @@ The source code is under the MIT license and can be found on GitHub_.
 .. _PIL/PIllow: http://pillow.readthedocs.org
 .. _epeg library: https://github.com/mattes/epeg
 .. _libjpeg: http://en.wikipedia.org/wiki/Libjpeg
-.. _CFFI: http://cffi.readthedocs.orgs
+.. _CFFI: http://cffi.readthedocs.org
 .. _spreads: http://spreads.readthedocs.org
 .. _GitHub: http://github.com/jbaiter/jpegtran-cffi
 
