@@ -179,9 +179,6 @@ class Exif(object):
 
     @property
     def thumbnail(self):
-        compression = self._unpack('H', self._get_tag_offset(0x103)+8)
-        if compression != 6:
-            raise ValueError("Image does not contain a JPEG thumbnail")
         offset = (self._exif_start +
                   self._unpack('I', self._get_tag_offset(0x201)+8))
         size = self._unpack('I', self._get_tag_offset(0x202)+8)
@@ -196,14 +193,15 @@ class Exif(object):
             idx = p_ifd + 2
             for _ in range(num_entries):
                 tag_num = self._unpack('H', idx)
-                # Check if we're at the orientation tag
+                # Check if we're at the desired tag
                 if tag_num == tagnum:
                     return idx
                 idx += 12
-            p_ifd = self._unpack('I', idx)+self._exif_start
-            if not p_ifd:
+            p_ifd = self._unpack('I', idx)
+            if p_ifd == 0:  # This means there are no more IFDs
                 raise ExifTagNotFound("Could not find EXIF Tag {0}"
                                       .format(tagnum))
+            p_ifd += self._exif_start
 
     def _thumbnail_offset(self):
         # Number of entries is 2 bytes, each entry is 12 bytes
