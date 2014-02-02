@@ -28,6 +28,6 @@ setup(
     packages=['jpegtran'],
     zip_safe=False,
     ext_modules=[jpegtran.lib.ffi.verifier.get_extension()],
-    install_requires=['cffi >= 0.8.1'],
-    setup_requires=['cffi >= 0.8.1']
+    install_requires=['cffi >= 0.8'],
+    setup_requires=['cffi >= 0.8']
 )
