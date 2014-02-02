@@ -182,6 +182,8 @@ class Exif(object):
         offset = (self._exif_start +
                   self._unpack('I', self._get_tag_offset(0x201)+8))
         size = self._unpack('I', self._get_tag_offset(0x202)+8)
+        if self._buf[:2] != b'\xff\xd8':
+            raise ValueError("Thumbnail is not in JPEG format.")
         return self._buf[offset:offset+size]
 
     def _get_tag_offset(self, tagnum):

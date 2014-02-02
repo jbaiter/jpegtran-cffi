@@ -24,7 +24,7 @@ def test_set_orientation(image):
 
 
 def test_get_exif_thumbnail(image):
-    thumb = JPEGImage(blob=image.exif_thumbnail)
+    thumb = image.exif_thumbnail
     assert thumb.width == 160
     assert thumb.height == 120
 
@@ -32,8 +32,8 @@ def test_get_exif_thumbnail(image):
 def test_get_exif_thumbnail_no_compression():
     thumb = JPEGImage(fname='test/test_thumb.jpg').exif_thumbnail
     assert thumb
-    assert JPEGImage(blob=thumb).width == 196
-    assert JPEGImage(blob=thumb).height == 130
+    assert thumb.width == 196
+    assert thumb.height == 130
 
 
 def test_exif_autotransform(image):

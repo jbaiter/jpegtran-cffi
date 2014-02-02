@@ -41,8 +41,8 @@ class JPEGImage(object):
 
         """
         try:
-            return lib.Exif(self.data).thumbnail
-        except (ValueError, lib.ExifTagNotFound, lib.InvalidExifData):
+            return JPEGImage(blob=lib.Exif(self.data).thumbnail)
+        except (lib.ExifTagNotFound, lib.InvalidExifData):
             return None
 
     @property
