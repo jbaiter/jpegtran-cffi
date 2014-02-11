@@ -18,7 +18,7 @@ transformation operations work directly with the JPEG data.
 
 setup(
     name='jpegtran-cffi',
-    version="0.3.2-wip",
+    version="0.4",
     description=("Extremly fast, (mostly) lossless JPEG transformations"),
     description_long=description_long,
     author="Johannes Baiter",

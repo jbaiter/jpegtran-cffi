@@ -131,6 +131,15 @@ Example Output
 
 On imgur: http://imgur.com/a/JvAtM
 
+
+Change Log
+==========
+
+0.4
+---
+- EXIF thumbnail parsing is now much more stable
+- `get_exif_thumbnail` returns a `JPEGImage` object instead of a `str`
+
 .. _api:
 
 API Reference
