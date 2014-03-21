@@ -80,10 +80,10 @@ Usage
     # jpegtran can transform the image automatically according to the EXIF
     # orientation tag
     photo = JPEGImage(blob=requests.get("http://example.com/photo.jpg").content)
-    print photo.orientation  # "6" (= 270°)
+    print photo.exif_orientation  # "6" (= 270°)
     print photo.width, photo.height # "4320 3240"
     corrected = photo.exif_autotransform()
-    print corrected.orientation  # "1" (= "normal")
+    print corrected.exif_orientation  # "1" (= "normal")
     print corrected.width, corrected.height  # "3240 4320"
 
 
