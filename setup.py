@@ -27,7 +27,8 @@ setup(
     license='MIT',
     packages=['jpegtran'],
     zip_safe=False,
-    ext_modules=[jpegtran.lib.ffi.verifier.get_extension()],
+    ext_modules=[jpegtran.lib.ffi_jpeg.verifier.get_extension(),
+                 jpegtran.lib.ffi_epeg.verifier.get_extension()],
     install_requires=['cffi >= 0.8'],
     setup_requires=['cffi >= 0.8']
 )

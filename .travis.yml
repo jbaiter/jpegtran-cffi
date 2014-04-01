@@ -1,11 +1,15 @@
 language: python
 before_install:
-    - sudo apt-get install libjpeg8-dev
+    - sudo bash ./.setup_travis.sh
     - pip install tox cffi
 env:
-    - TOX_ENV=py26
-    - TOX_ENV=py27
-    - TOX_ENV=py33
-    - TOX_ENV=pypy
+    - TOX_ENV=py26 JPEGLIB=jpeg8
+    - TOX_ENV=py26 JPEGLIB=turbojpeg
+    - TOX_ENV=py27 JPEGLIB=jpeg8
+    - TOX_ENV=py27 JPEGLIB=turbojpeg
+    - TOX_ENV=py33 JPEGLIB=jpeg8
+    - TOX_ENV=py33 JPEGLIB=turbojpeg
+    - TOX_ENV=pypy JPEGLIB=jpeg8
+    - TOX_ENV=pypy JPEGLIB=turbojpeg
 script:
     - tox -e $TOX_ENV
