@@ -11,7 +11,6 @@
  * provides some lossless and sort-of-lossless transformations of JPEG data.
  */
 
-#include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
 #include "transupp.h"		/* Support routines for jpegtran */
 #include "jversion.h"		/* for version message */
 
@@ -371,9 +370,6 @@ main (int argc, char **argv)
   struct jpeg_decompress_struct srcinfo;
   struct jpeg_compress_struct dstinfo;
   struct jpeg_error_mgr jsrcerr, jdsterr;
-#ifdef PROGRESS_REPORT
-  struct cdjpeg_progress_mgr progress;
-#endif
   jvirt_barray_ptr * src_coef_arrays;
   jvirt_barray_ptr * dst_coef_arrays;
   int file_index;
