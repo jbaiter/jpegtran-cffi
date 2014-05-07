@@ -76,6 +76,12 @@ def test_crop(image):
     assert cropped.height == 125
 
 
+def test_bogus_crop(image):
+    cropped = image.crop(0, 0, image.width, image.height)
+    assert cropped.width == image.width
+    assert cropped.height == image.height
+
+
 def test_downscale(image):
     scaled = image.downscale(240, 180)
     assert scaled.width == 240

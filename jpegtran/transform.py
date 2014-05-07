@@ -156,7 +156,7 @@ class JPEGImage(object):
 
         """
         valid_crop = (x < self.width and y < self.height and
-                      x+width < self.width and y+height < self.height)
+                      x+width <= self.width and y+height <= self.height)
         if not valid_crop:
             raise ValueError("Crop parameters point outside of the image")
         return JPEGImage(blob=lib.Transformation(self.data)
