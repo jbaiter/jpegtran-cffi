@@ -29,6 +29,23 @@ def test_get_exif_thumbnail(image):
     assert thumb.height == 120
 
 
+def test_set_exif_thumbnail(image):
+    thumb_old = image.exif_thumbnail
+    thumb_new = thumb_old.rotate(90)
+    image.exif_thumbnail = thumb_new
+    assert image.exif_thumbnail.width == 120
+    assert image.exif_thumbnail.height == 160
+    # Make sure we still have a valid JPEG image, if not this segfaults
+    assert image.width == 480
+    assert image.height == 360
+
+
+def test_update_exif_thumbnail(image):
+    rotated = image.rotate(90)
+    assert rotated.exif_thumbnail.width == 120
+    assert rotated.exif_thumbnail.height == 160
+
+
 def test_get_exif_thumbnail_no_compression():
     thumb = JPEGImage(fname='test/test_thumb.jpg').exif_thumbnail
     assert thumb
@@ -71,9 +88,11 @@ def test_transverse(image):
 
 
 def test_crop(image):
-    cropped = image.crop(0, 0, 125, 125)
-    assert cropped.width == 125
-    assert cropped.height == 125
+    cropped = image.crop(0, 0, 180, 180)
+    assert cropped.width == 180
+    assert cropped.height == 180
+    assert cropped.exif_thumbnail.width == 160
+    assert cropped.exif_thumbnail.height == 160
 
 
 def test_bogus_crop(image):

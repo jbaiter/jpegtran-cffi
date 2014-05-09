@@ -1,3 +1,5 @@
+from __future__ import division
+
 import re
 
 import jpegtran.lib as lib
@@ -42,8 +44,20 @@ class JPEGImage(object):
         """
         try:
             return JPEGImage(blob=lib.Exif(self.data).thumbnail)
-        except (lib.ExifTagNotFound, lib.InvalidExifData):
+        except lib.ExifException:
             return None
+
+    @exif_thumbnail.setter
+    def exif_thumbnail(self, image):
+        if isinstance(image, JPEGImage):
+            data = image.data
+        elif isinstance(image, str):
+            data = bytearray(image)
+        else:
+            data = image
+        if not self.exif_thumbnail:
+            raise ValueError("No pre-existing thumbnail found, cannot set.")
+        lib.Exif(self.data).thumbnail = data
 
     @property
     def exif_orientation(self):
@@ -53,7 +67,7 @@ class JPEGImage(object):
         """
         try:
             return lib.Exif(self.data).orientation
-        except (ValueError, lib.ExifTagNotFound, lib.InvalidExifData):
+        except lib.ExifException:
             return None
 
     @exif_orientation.setter
@@ -105,6 +119,7 @@ class JPEGImage(object):
         # Set EXIF orientation to 'Normal' (== no rotation)
         if img.exif_orientation not in (None, 1):
             img.exif_orientation = 1
+        img._update_thumbnail()
         return img
 
     def flip(self, direction):
@@ -119,7 +134,9 @@ class JPEGImage(object):
         if direction not in ('horizontal', 'vertical'):
             raise ValueError("Direction must be either 'vertical' or "
                              "'horizontal'")
-        return JPEGImage(blob=lib.Transformation(self.data).flip(direction))
+        new = JPEGImage(blob=lib.Transformation(self.data).flip(direction))
+        new._update_thumbnail()
+        return new
 
     def transpose(self):
         """ Transpose the image (across  upper-right -> lower-left axis)
@@ -128,7 +145,9 @@ class JPEGImage(object):
         :rtype:         jpegtran.JPEGImage
 
         """
-        return JPEGImage(blob=lib.Transformation(self.data).transpose())
+        new = JPEGImage(blob=lib.Transformation(self.data).transpose())
+        new._update_thumbnail()
+        return new
 
     def transverse(self):
         """ Transverse transpose the image (across  upper-left -> lower-right
@@ -138,7 +157,9 @@ class JPEGImage(object):
         :rtype:         jpegtran.JPEGImage
 
         """
-        return JPEGImage(blob=lib.Transformation(self.data).transverse())
+        new = JPEGImage(blob=lib.Transformation(self.data).transverse())
+        new._update_thumbnail()
+        return new
 
     def crop(self, x, y, width, height):
         """ Crop a rectangular area from the image.
@@ -159,8 +180,10 @@ class JPEGImage(object):
                       x+width <= self.width and y+height <= self.height)
         if not valid_crop:
             raise ValueError("Crop parameters point outside of the image")
-        return JPEGImage(blob=lib.Transformation(self.data)
-                         .crop(x, y, width, height))
+        new = JPEGImage(blob=lib.Transformation(self.data)
+                             .crop(x, y, width, height))
+        new._update_thumbnail()
+        return new
 
     def downscale(self, width, height, quality=75):
         """ Downscale the image.
@@ -175,10 +198,14 @@ class JPEGImage(object):
         :rtype:         jpegtran.JPEGImage
 
         """
+        if width == self.width and height == self.height:
+            return self
         if width > self.width or height > self.height:
             raise ValueError("jpegtran can only downscale JPEGs")
-        return JPEGImage(blob=lib.Transformation(self.data)
-                         .scale(width, height, quality))
+        new = JPEGImage(blob=lib.Transformation(self.data)
+                        .scale(width, height, quality))
+        new._update_thumbnail()
+        return new
 
     def save(self, fname):
         """ Save the image to a file
@@ -197,7 +224,25 @@ class JPEGImage(object):
         """ Get the image data as a string
 
         :return:    Image data
-        :rtype:     str
+        :rtype:     bytes
 
         """
-        return str(self.data)
+        return bytes(self.data)
+
+    def _update_thumbnail(self):
+        if not self.exif_thumbnail:
+            return
+        target_width = None
+        target_height = None
+        if self.width > self.height:
+            target_width = 160
+            target_height = int(160/(self.width/self.height))
+        else:
+            target_height = 160
+            target_width = int(160*(self.width/self.height))
+        if target_width > self.width and target_height > self.height:
+            # TODO: We should instead strip the thumbnail completely since
+            #       it clearly no longer makes any sense
+            return
+        updated = self.downscale(target_width, target_height)
+        self.exif_thumbnail = updated

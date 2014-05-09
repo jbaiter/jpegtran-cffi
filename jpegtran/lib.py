@@ -205,11 +205,17 @@ except:
     JPEG8 = True
 
 
-class InvalidExifData(Exception):
+class ExifException(Exception):
+    pass
+
+class InvalidExifData(ExifException):
     pass
 
 
-class ExifTagNotFound(Exception):
+class ExifTagNotFound(ExifException):
+    pass
+
+class NoExifDataFound(ExifException):
     pass
 
 
@@ -217,7 +223,10 @@ class Exif(object):
     def __init__(self, blob):
         self._buf = blob
         # EXIF struct starts after APP1 marker (2 bytes) and size (2 bytes)
-        header = self._buf.index(b'\xff\xe1')+4
+        try:
+            header = self._buf.index(b'\xff\xe1')+4
+        except ValueError:
+            raise NoExifDataFound("Could not find EXIF data")
         if not self._buf[header:header+6] == b'Exif\x00\x00':
             raise InvalidExifData("Invalid start of EXIF data")
         # EXIF data begins after EXIF header (6 bytes)
@@ -253,6 +262,26 @@ class Exif(object):
             raise ValueError("Thumbnail is not in JPEG format.")
         return self._buf[offset:offset+size]
 
+    @thumbnail.setter
+    def thumbnail(self, data):
+        offset = (self._exif_start +
+                  self._unpack('I', self._get_tag_offset(0x201)+8))
+        old_size = self._unpack('I', self._get_tag_offset(0x202)+8)
+        app1_size_offset = self._buf.index(b'\xff\xe1')+2
+        app1_size = struct.unpack(
+            '>H', self._buf[app1_size_offset:app1_size_offset+2])[0]
+        # Strip everything between the JFIF APP1 and the quant table
+        try:
+            jfif_start = data.index(b'\xff\xe0')
+            quant_start = data.index(b'\xff\xdb')
+            stripped_data = data[0:jfif_start] + data[quant_start:]
+        except ValueError:
+            stripped_data = data
+        struct.pack_into('>H', self._buf, app1_size_offset,
+                         app1_size+(len(stripped_data)-old_size))
+        self._pack('I', self._get_tag_offset(0x202)+8, len(stripped_data))
+        self._buf[offset:offset+old_size] = stripped_data
+
     def _get_tag_offset(self, tagnum):
         # IFD0 pointer starts after alignment (2 bytes) and tag mark (2 bytes)
         p_ifd = self._unpack('I', self._exif_start+4)+self._exif_start
@@ -271,19 +300,6 @@ class Exif(object):
                 raise ExifTagNotFound("Could not find EXIF Tag {0}"
                                       .format(tagnum))
             p_ifd += self._exif_start
-
-    def _thumbnail_offset(self):
-        # Number of entries is 2 bytes, each entry is 12 bytes
-        ifd0_len = 2+self._unpack('H', self._ifd0)*12
-        ifd1 = self._unpack('I', self._ifd0+ifd0_len)+self._exif_start
-        num_entries = self._unpack('H', ifd1)
-        # Start after number of entries (2 bytes)
-        idx = ifd1+2
-        for _ in range(num_entries):
-            tag_num = self._unpack('H', idx)
-            if tag_num == 0x103:
-                return idx
-            idx += 12
 
     def _unpack(self, fmt, offset):
         fmt = ('>' if self._motorola else '<')+fmt
