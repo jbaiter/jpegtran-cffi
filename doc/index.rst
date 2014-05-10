@@ -41,7 +41,8 @@ Requirements
 ============
 - CPython 2.6, 2.7, 3.3 or PyPy
 - cffi
-- **libjpeg8** with headers (earlier versions will not work)
+- **libjpeg8** with headers (v6 will not work) *or* **libjpeg-turbo** with
+  *turbojpeg* headers
 
 Installation
 ============
@@ -134,6 +135,13 @@ On imgur: http://imgur.com/a/JvAtM
 
 Change Log
 ==========
+
+0.5
+---
+- Support for libjpeg-turbo
+- EXIF thumbnails are automatically updated on transformations
+- Don't raise an error when doing no-op transformations
+
 
 0.4
 ---
