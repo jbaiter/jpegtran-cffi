@@ -208,12 +208,14 @@ except:
 class ExifException(Exception):
     pass
 
+
 class InvalidExifData(ExifException):
     pass
 
 
 class ExifTagNotFound(ExifException):
     pass
+
 
 class NoExifDataFound(ExifException):
     pass
@@ -268,8 +270,7 @@ class Exif(object):
                   self._unpack('I', self._get_tag_offset(0x201)+8))
         old_size = self._unpack('I', self._get_tag_offset(0x202)+8)
         app1_size_offset = self._buf.index(b'\xff\xe1')+2
-        app1_size = struct.unpack(
-            '>H', self._buf[app1_size_offset:app1_size_offset+2])[0]
+        app1_size = self._unpack('>H', app1_size_offset)
         # Strip everything between the JFIF APP1 and the quant table
         try:
             jfif_start = data.index(b'\xff\xe0')
@@ -277,8 +278,8 @@ class Exif(object):
             stripped_data = data[0:jfif_start] + data[quant_start:]
         except ValueError:
             stripped_data = data
-        struct.pack_into('>H', self._buf, app1_size_offset,
-                         app1_size+(len(stripped_data)-old_size))
+        self._pack('>H', app1_size_offset,
+                   app1_size+(len(stripped_data)-old_size))
         self._pack('I', self._get_tag_offset(0x202)+8, len(stripped_data))
         self._buf[offset:offset+old_size] = stripped_data
 
@@ -302,14 +303,16 @@ class Exif(object):
             p_ifd += self._exif_start
 
     def _unpack(self, fmt, offset):
-        fmt = ('>' if self._motorola else '<')+fmt
+        if not '>' in fmt and not '<' in fmt:
+            fmt = ('>' if self._motorola else '<')+fmt
         if PY2:
             return struct.unpack_from(fmt, buffer(self._buf), offset)[0]
         else:
             return struct.unpack_from(fmt, self._buf, offset)[0]
 
     def _pack(self, fmt, offset, value):
-        fmt = ('>' if self._motorola else '<')+fmt
+        if not '>' in fmt and not '<' in fmt:
+            fmt = ('>' if self._motorola else '<')+fmt
         struct.pack_into(fmt, self._buf, offset, value)
 
 
