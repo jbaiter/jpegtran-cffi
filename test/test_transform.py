@@ -1,11 +1,15 @@
+import os
+
 import pytest
 
 from jpegtran import JPEGImage
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 @pytest.fixture
 def image():
-    with open('test/test.jpg', 'rb') as fp:
+    with open(os.path.join(BASE_DIR, 'test.jpg'), 'rb') as fp:
         return JPEGImage(blob=fp.read())
 
 
@@ -47,7 +51,8 @@ def test_update_exif_thumbnail(image):
 
 
 def test_get_exif_thumbnail_no_compression():
-    thumb = JPEGImage(fname='test/test_thumb.jpg').exif_thumbnail
+    thumb = (JPEGImage(fname=os.path.join(BASE_DIR, 'test_thumb.jpg'))
+             .exif_thumbnail)
     assert thumb
     assert thumb.width == 196
     assert thumb.height == 130
