@@ -1,0 +1,27 @@
+Source: python-jpegtran-cffi
+Maintainer: Johannes Baiter <johannes.baiter@gmail.com>
+Section: python
+Priority: optional
+Build-Depends:
+ debhelper (>= 9),
+ dh-python,
+ python-all-dev,
+ python3-all-dev,
+ python-setuptools,
+ python3-setuptools,
+ python-cffi (>= 0.8),
+ python3-cffi (>= 0.8),
+ libjpeg8-dev,
+ python-pytest,
+ python3-pytest,
+Standards-Version: 3.9.5
+
+Package: python-jpegtran-cffi
+Architecture: any
+Depends: ${misc:Depends}, ${python:Depends}, ${shlibs:Depends}
+Description: Extremly fast, (mostly) lossless JPEG transformations
+
+Package: python3-jpegtran-cffi
+Architecture: any
+Depends: ${misc:Depends}, ${python:Depends}, ${shlibs:Depends}
+Description: Extremly fast, (mostly) lossless JPEG transformations

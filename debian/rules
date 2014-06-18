@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME=jpegtran-cffi
+export PYBUILD_TEST_PYTEST=1
+export PYBUILD_TEST_ARGS={dir}/test/
+
+
+%:
+	dh $@ --with python2,python3 --buildsystem=pybuild
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf jpegtran/__pycache__
+

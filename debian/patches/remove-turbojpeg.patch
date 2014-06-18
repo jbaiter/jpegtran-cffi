@@ -1,0 +1,291 @@
+Remove turbojpeg FFI
+--- a/jpegtran/lib.py
++++ b/jpegtran/lib.py
+@@ -35,174 +35,119 @@
+     include_dirs=["src"], define_macros=[("HAVE_UNSIGNED_CHAR", "1")],
+     libraries=["jpeg"])
+ 
+-try:
+-    ffi = FFI()
+-    ffi.cdef("""
+-        enum TJXOP {
+-            TJXOP_NONE,
+-            TJXOP_HFLIP,
+-            TJXOP_VFLIP,
+-            TJXOP_TRANSPOSE,
+-            TJXOP_TRANSVERSE,
+-            TJXOP_ROT90,
+-            TJXOP_ROT180,
+-            TJXOP_ROT270
+-        };
+-
+-        #define TJXOPT_PERFECT  ...
+-        #define TJXOPT_TRIM     ...
+-        #define TJXOPT_CROP     ...
+-        #define TJXOPT_GRAY     ...
+-
+-        typedef struct {
+-            int x;
+-            int y;
+-            int w;
+-            int h;
+-        } tjregion;
+-
+-        typedef struct tjtransform {
+-            tjregion r;
+-            int op;
+-            int options;
+-            ...;
+-        } tjtransform;
+-
+-        typedef void* tjhandle;
+-
+-
+-        tjhandle tjInitTransform(void);
+-        int tjDecompressHeader2(tjhandle handle, unsigned char *jpegBuf,
+-                                unsigned long jpegSize, int *width,
+-                                int *height, int *jpegSubsamp);
+-        int tjTransform(tjhandle handle, unsigned char *jpegBuf,
+-                        unsigned long jpegSize, int n, unsigned char **dstBufs,
+-                        unsigned long *dstSizes, tjtransform *transforms,
+-                        int flags);
+-        int tjDestroy(tjhandle handle);
+-        void tjFree(unsigned char *buffer);
+-        char* tjGetErrorStr(void);
+-    """)
+-
+-    libjpeg = ffi.verify("""
+-    #include "turbojpeg.h"
+-    """, libraries=["turbojpeg"])
+-    ffi_jpeg = ffi
+-    TURBOJPEG = True
+-except:
+-    ffi = FFI()
+-    ffi.cdef("""
+-    typedef int boolean;
+-    typedef ... jvirt_barray_ptr;
+-    typedef enum {
+-        JXFORM_NONE,
+-        JXFORM_FLIP_H,
+-        JXFORM_FLIP_V,
+-        JXFORM_TRANSPOSE,
+-        JXFORM_TRANSVERSE,
+-        JXFORM_ROT_90,
+-        JXFORM_ROT_180,
+-        JXFORM_ROT_270
+-    } JXFORM_CODE;
+-    typedef enum {
+-        JCROP_UNSET,
+-        JCROP_POS,
+-        JCROP_NEG,
+-        JCROP_FORCE
+-    } JCROP_CODE;
+-    typedef struct {
+-        JXFORM_CODE transform;
+-        boolean perfect;
+-        boolean trim;
+-        boolean force_grayscale;
+-        boolean crop;
+-        unsigned int crop_width;
+-        JCROP_CODE crop_width_set;
+-        unsigned int crop_height;
+-        JCROP_CODE crop_height_set;
+-        unsigned int crop_xoffset;
+-        JCROP_CODE crop_xoffset_set;
+-        unsigned int crop_yoffset;
+-        JCROP_CODE crop_yoffset_set;
+-        ...;
+-    } jpeg_transform_info;
+-    struct jpeg_common_struct {
+-        struct jpeg_error_mgr* err;
+-        ...;
+-    };
+-    struct jpeg_decompress_struct {
+-        struct jpeg_error_mgr* err;
+-        ...;
+-    };
+-    struct jpeg_compress_struct {
+-        struct jpeg_error_mgr* err;
+-        ...;
+-    };
+-    typedef struct jpeg_compress_struct* j_compress_ptr;
+-    typedef struct jpeg_decompress_struct* j_decompress_ptr;
+-    typedef struct jpeg_common_struct* j_common_ptr;
+-    struct jpeg_error_mgr {
+-        void (*reset_error_mgr)  (j_common_ptr cinfo);
+-        void (*emit_message)     (j_common_ptr cinfo, int msg_level);
+-        int  trace_level;
+-        long num_warnings;
+-        int msg_code;
+-        ...;
+-    };
+-    struct jpeg_error_mgr* jpeg_std_error (struct jpeg_error_mgr* err);
+-
+-    // jpeglib
+-    void    jpeg_mem_src               (j_decompress_ptr,
+-                                        unsigned char * inbuffer,
+-                                        unsigned long insize);
+-    void     jpeg_create_decompress    (j_decompress_ptr);
+-    boolean     jpeg_finish_decompress    (j_decompress_ptr);
+-    void     jpeg_destroy_decompress   (j_decompress_ptr);
+-    void    jpeg_mem_dest              (j_compress_ptr,
+-                                        unsigned char ** outbuffer,
+-                                        unsigned long * outsize);
+-    void     jpeg_create_compress      (j_compress_ptr);
+-    void     jpeg_finish_compress      (j_compress_ptr);
+-    void     jpeg_destroy_compress     (j_compress_ptr);
+-
+-    // transupp
+-    typedef enum {
+-        JCOPYOPT_NONE,
+-        JCOPYOPT_COMMENTS,
+-        JCOPYOPT_ALL
+-    } JCOPY_OPTION;
+-    void     jcopy_markers_setup       (j_decompress_ptr, JCOPY_OPTION);
+-    void     jcopy_markers_execute     (j_decompress_ptr,
+-                                        j_compress_ptr, JCOPY_OPTION);
+-    int      jpeg_read_header          (j_decompress_ptr, boolean);
+-    jvirt_barray_ptr* jpeg_read_coefficients (j_decompress_ptr);
+-    void     jpeg_write_coefficients   (j_compress_ptr,
+-                                        jvirt_barray_ptr*);
+-    void     jpeg_copy_critical_parameters (j_decompress_ptr,
+-                                            j_compress_ptr);
+-    boolean     jtransform_request_workspace (j_decompress_ptr,
+-                                            jpeg_transform_info*);
+-    jvirt_barray_ptr* jtransform_adjust_parameters (j_decompress_ptr,
+-                                                    j_compress_ptr,
+-                                                    jvirt_barray_ptr*,
+-                                                    jpeg_transform_info*);
+-    void     jtransform_execute_transform (j_decompress_ptr,
+-                                            j_compress_ptr,
+-                                            jvirt_barray_ptr*,
+-                                            jpeg_transform_info*);
+-    """)
+-
+-    libjpeg = ffi.verify("""
+-    #include "jconfig.h"
+-    #include "jmorecfg.h"
+-    #include "jpeglib.h"
+-    #include "transupp.h"
+-    #include "jerror.h"
+-    """, sources=["src/transupp.c"],
+-        include_dirs=["src"],
+-        libraries=["jpeg"])
+-    ffi_jpeg = ffi
+-    JPEG8 = True
++ffi = FFI()
++ffi.cdef("""
++typedef int boolean;
++typedef ... jvirt_barray_ptr;
++typedef enum {
++    JXFORM_NONE,
++    JXFORM_FLIP_H,
++    JXFORM_FLIP_V,
++    JXFORM_TRANSPOSE,
++    JXFORM_TRANSVERSE,
++    JXFORM_ROT_90,
++    JXFORM_ROT_180,
++    JXFORM_ROT_270
++} JXFORM_CODE;
++typedef enum {
++    JCROP_UNSET,
++    JCROP_POS,
++    JCROP_NEG,
++    JCROP_FORCE
++} JCROP_CODE;
++typedef struct {
++    JXFORM_CODE transform;
++    boolean perfect;
++    boolean trim;
++    boolean force_grayscale;
++    boolean crop;
++    unsigned int crop_width;
++    JCROP_CODE crop_width_set;
++    unsigned int crop_height;
++    JCROP_CODE crop_height_set;
++    unsigned int crop_xoffset;
++    JCROP_CODE crop_xoffset_set;
++    unsigned int crop_yoffset;
++    JCROP_CODE crop_yoffset_set;
++    ...;
++} jpeg_transform_info;
++struct jpeg_common_struct {
++    struct jpeg_error_mgr* err;
++    ...;
++};
++struct jpeg_decompress_struct {
++    struct jpeg_error_mgr* err;
++    ...;
++};
++struct jpeg_compress_struct {
++    struct jpeg_error_mgr* err;
++    ...;
++};
++typedef struct jpeg_compress_struct* j_compress_ptr;
++typedef struct jpeg_decompress_struct* j_decompress_ptr;
++typedef struct jpeg_common_struct* j_common_ptr;
++struct jpeg_error_mgr {
++    void (*reset_error_mgr)  (j_common_ptr cinfo);
++    void (*emit_message)     (j_common_ptr cinfo, int msg_level);
++    int  trace_level;
++    long num_warnings;
++    int msg_code;
++    ...;
++};
++struct jpeg_error_mgr* jpeg_std_error (struct jpeg_error_mgr* err);
++
++// jpeglib
++void    jpeg_mem_src               (j_decompress_ptr,
++                                    unsigned char * inbuffer,
++                                    unsigned long insize);
++void     jpeg_create_decompress    (j_decompress_ptr);
++boolean     jpeg_finish_decompress    (j_decompress_ptr);
++void     jpeg_destroy_decompress   (j_decompress_ptr);
++void    jpeg_mem_dest              (j_compress_ptr,
++                                    unsigned char ** outbuffer,
++                                    unsigned long * outsize);
++void     jpeg_create_compress      (j_compress_ptr);
++void     jpeg_finish_compress      (j_compress_ptr);
++void     jpeg_destroy_compress     (j_compress_ptr);
++
++// transupp
++typedef enum {
++    JCOPYOPT_NONE,
++    JCOPYOPT_COMMENTS,
++    JCOPYOPT_ALL
++} JCOPY_OPTION;
++void     jcopy_markers_setup       (j_decompress_ptr, JCOPY_OPTION);
++void     jcopy_markers_execute     (j_decompress_ptr,
++                                    j_compress_ptr, JCOPY_OPTION);
++int      jpeg_read_header          (j_decompress_ptr, boolean);
++jvirt_barray_ptr* jpeg_read_coefficients (j_decompress_ptr);
++void     jpeg_write_coefficients   (j_compress_ptr,
++                                    jvirt_barray_ptr*);
++void     jpeg_copy_critical_parameters (j_decompress_ptr,
++                                        j_compress_ptr);
++boolean     jtransform_request_workspace (j_decompress_ptr,
++                                        jpeg_transform_info*);
++jvirt_barray_ptr* jtransform_adjust_parameters (j_decompress_ptr,
++                                                j_compress_ptr,
++                                                jvirt_barray_ptr*,
++                                                jpeg_transform_info*);
++void     jtransform_execute_transform (j_decompress_ptr,
++                                        j_compress_ptr,
++                                        jvirt_barray_ptr*,
++                                        jpeg_transform_info*);
++""")
++
++libjpeg = ffi.verify("""
++#include "jconfig.h"
++#include "jmorecfg.h"
++#include "jpeglib.h"
++#include "transupp.h"
++#include "jerror.h"
++""", sources=["src/transupp.c"],
++    include_dirs=["src"],
++    libraries=["jpeg"])
++ffi_jpeg = ffi
++JPEG8 = True
+ 
+ 
+ class ExifException(Exception):

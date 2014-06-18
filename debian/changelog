@@ -1,0 +1,5 @@
+python-jpegtran-cffi (0.5-1) UNRELEASED; urgency=medium
+
+  * Initial release.
+
+ -- Johannes Baiter <johannes.baiter@gmail.com>  Wed, 18 Jun 2014 14:35:29 +0200
