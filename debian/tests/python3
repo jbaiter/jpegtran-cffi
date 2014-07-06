@@ -1,8 +1,0 @@
-#!/bin/bash
-set -e
-SRC="${PWD}"
-
-cd "${ADTTMP}"
-for py in $(py3versions -vi) ; do
-    python$py -m pytest ${SRC}/test
-done

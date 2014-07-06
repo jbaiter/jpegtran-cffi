@@ -1,2 +1,0 @@
-Tests: python2 python3
-Depends: @, @builddeps@
