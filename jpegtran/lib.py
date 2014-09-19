@@ -1,5 +1,6 @@
 import struct
 import sys
+import weakref
 from functools import wraps
 
 PY2 = sys.version_info < (3, 0)
@@ -14,6 +15,8 @@ JPEG8 = False
 TURBOJPEG = False
 
 ffi_epeg.cdef("""
+   void free(void *);
+
    typedef ... Epeg_Image;
    Epeg_Image   *epeg_file_open         (const char *file);
    Epeg_Image   *epeg_memory_open       (unsigned char *data, int size);
@@ -92,6 +95,8 @@ try:
 except:
     ffi = FFI()
     ffi.cdef("""
+    void free(void *);
+
     typedef int boolean;
     typedef ... jvirt_barray_ptr;
     typedef enum {
@@ -205,6 +210,9 @@ except:
     JPEG8 = True
 
 
+_weak_keydict = weakref.WeakKeyDictionary()
+
+
 class ExifException(Exception):
     pass
 
@@ -316,6 +324,10 @@ class Exif(object):
         struct.pack_into(fmt, self._buf, offset, value)
 
 
+def _jpeg8_cleanup(buffer):
+    libjpeg.free(buffer[0])
+
+
 def jpegtran_op_jpeg8(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
@@ -366,8 +378,13 @@ def jpegtran_op_jpeg8(func):
         libjpeg.jpeg_destroy_decompress(srcinfo)
 
         # Return output data
+        _weak_keydict[out_data_p[0]] = out_data_p
         return bytearray(ffi_jpeg.buffer(out_data_p[0], out_data_len[0])[:])
     return wrapper
+
+
+def _turbojpeg_cleanup(buffers):
+    libjpeg.tjFree(buffers[0])
 
 
 def jpegtran_op_turbojpeg(func):
@@ -379,11 +396,11 @@ def jpegtran_op_turbojpeg(func):
         inbuf = ffi_jpeg.buffer(in_data_p, in_data_len)
         inbuf[:] = self._data
 
-        out_bufs = ffi_jpeg.new("unsigned char*[]", 1)
+        out_bufs = ffi_jpeg.gc(ffi_jpeg.new("unsigned char**"), _turbojpeg_cleanup)
         out_bufs[0] = ffi_jpeg.NULL
         out_sizes = ffi_jpeg.new("unsigned long*")
 
-        tjhandle = libjpeg.tjInitTransform()
+        tjhandle = ffi_jpeg.gc(libjpeg.tjInitTransform(), libjpeg.tjDestroy)
 
         # Call the wrapped function with the transformoption struct
         transformoption = func(self, *args, **kwargs)
@@ -394,19 +411,20 @@ def jpegtran_op_turbojpeg(func):
         if rv < 0:
             raise Exception("Transformation failed: {0}"
                             .format(ffi_jpeg.string(libjpeg.tjGetErrorStr())))
-        transformed_data = bytearray(ffi_jpeg.buffer(out_bufs[0],
-                                                     out_sizes[0])[:])
 
-        # Clean up
-        libjpeg.tjDestroy(tjhandle)
-        libjpeg.tjFree(out_bufs[0])
-        return transformed_data
+        _weak_keydict[out_bufs[0]] = out_bufs
+        return bytearray(ffi_jpeg.buffer(out_bufs[0], out_sizes[0])[:])
     return wrapper
+
+
+def _epeg_free_buffer(buffer):
+    libepeg.free(buffer[0])
 
 
 class BaseTransformation(object):
     def __init__(self, blob):
         self._data = blob
+
 
     def get_dimensions(self):
         width = ffi_epeg.new("int*")
@@ -415,9 +433,8 @@ class BaseTransformation(object):
         in_data_p = ffi_epeg.new("unsigned char[]", in_data_len)
         inbuf = ffi_epeg.buffer(in_data_p, in_data_len)
         inbuf[:] = self._data
-        img = libepeg.epeg_memory_open(in_data_p, in_data_len)
+        img = ffi_epeg.gc(libepeg.epeg_memory_open(in_data_p, in_data_len), libepeg.epeg_close)
         libepeg.epeg_size_get(img, width, height)
-        libepeg.epeg_close(img)
         return (width[0], height[0])
 
     def scale(self, width, height, quality=75):
@@ -425,15 +442,16 @@ class BaseTransformation(object):
         in_data_p = ffi_epeg.new("unsigned char[]", in_data_len)
         inbuf = ffi_epeg.buffer(in_data_p, in_data_len)
         inbuf[:] = self._data
-        img = libepeg.epeg_memory_open(in_data_p, in_data_len)
+        img = ffi_epeg.gc(libepeg.epeg_memory_open(in_data_p, in_data_len), libepeg.epeg_close)
         libepeg.epeg_decode_size_set(img, width, height)
         libepeg.epeg_quality_set(img, quality)
 
-        pdata = ffi_epeg.new("unsigned char **")
+        pdata = ffi_epeg.gc(ffi_epeg.new("unsigned char **"), _epeg_free_buffer)
         psize = ffi_epeg.new("int*")
         libepeg.epeg_memory_output_set(img, pdata, psize)
         libepeg.epeg_encode(img)
-        libepeg.epeg_close(img)
+
+        _weak_keydict[pdata[0]] = pdata
         return bytearray(ffi_epeg.buffer(pdata[0], psize[0])[:])
 
 
