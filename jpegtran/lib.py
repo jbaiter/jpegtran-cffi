@@ -338,7 +338,8 @@ def jpegtran_op_jpeg8(func):
         inbuf[:] = self._data
         srcerr = ffi_jpeg.new("struct jpeg_error_mgr*")
         dsterr = ffi_jpeg.new("struct jpeg_error_mgr*")
-        out_data_p = ffi_jpeg.new("unsigned char**")
+        out_data_p = ffi_jpeg.gc(ffi_jpeg.new("unsigned char**"),
+                                 _jpeg8_cleanup)
         out_data_len = ffi_jpeg.new("unsigned long*")
         srcinfo = ffi_jpeg.new("struct jpeg_decompress_struct*")
         srcinfo.err = libjpeg.jpeg_std_error(srcerr)
