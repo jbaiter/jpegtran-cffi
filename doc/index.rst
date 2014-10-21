@@ -136,6 +136,10 @@ On imgur: http://imgur.com/a/JvAtM
 Change Log
 ==========
 
+0.5.1
+-----
+- Fix for a memory leak (Thanks to Stephane Boisson)
+
 0.5
 ---
 - Support for libjpeg-turbo
