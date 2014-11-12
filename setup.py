@@ -4,7 +4,7 @@ from setuptools import setup
 import jpegtran.lib
 
 if os.path.exists('README.rst'):
-    description_long = open('README.rst').read()
+    description_long = open('README.rst', encoding="utf-8").read()
 else:
     description_long = """
 A Python package for blazingly fast JPEG transformations. Compared to other,
