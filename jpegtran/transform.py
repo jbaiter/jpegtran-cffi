@@ -217,7 +217,7 @@ class JPEGImage(object):
         if not re.match(r'^.*\.jp[e]*g$', fname.lower()):
             raise ValueError("fname must refer to a JPEG file, i.e. end with "
                              "'.jpg' or '.jpeg'")
-        with open(fname, 'w') as fp:
+        with open(fname, 'wb') as fp:
             fp.write(self.data)
 
     def as_blob(self):
