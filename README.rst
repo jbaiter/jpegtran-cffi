@@ -31,7 +31,7 @@ Wand and PIL were too slow to be usable.
 .. _Benchmarks: http://jpegtran-cffi.readthedocs.org/en/latest/#benchmarks
 .. _epeg library: https://github.com/mattes/epeg
 .. _libjpeg: http://en.wikipedia.org/wiki/Libjpeg
-.. _CFFI: http://cffi.readthedocs.orgs
+.. _CFFI: http://cffi.readthedocs.org
 .. _spreads: http://spreads.readthedocs.org
 
 Requirements
