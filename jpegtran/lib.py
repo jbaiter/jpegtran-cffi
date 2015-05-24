@@ -325,7 +325,8 @@ class Exif(object):
 
 
 def _jpeg8_cleanup(buffer):
-    libjpeg.free(buffer[0])
+    if libjpeg:
+        libjpeg.free(buffer[0])
 
 
 def jpegtran_op_jpeg8(func):
@@ -385,7 +386,8 @@ def jpegtran_op_jpeg8(func):
 
 
 def _turbojpeg_cleanup(buffers):
-    libjpeg.tjFree(buffers[0])
+    if libjpeg:
+        libjpeg.tjFree(buffers[0])
 
 
 def jpegtran_op_turbojpeg(func):
