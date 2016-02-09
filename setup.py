@@ -2,7 +2,6 @@ import os
 import sys
 from setuptools import setup
 
-import jpegtran.lib
 
 if os.path.exists('README.rst'):
     if sys.version_info > (3,):
@@ -22,7 +21,7 @@ transformation operations work directly with the JPEG data.
 
 setup(
     name='jpegtran-cffi',
-    version="0.5.2",
+    version="0.6a1",
     description=("Extremly fast, (mostly) lossless JPEG transformations"),
     description_long=description_long,
     author="Johannes Baiter",
@@ -30,9 +29,8 @@ setup(
     author_email="johannes.baiter@gmail.com",
     license='MIT',
     packages=['jpegtran'],
-    zip_safe=False,
-    ext_modules=[jpegtran.lib.ffi_jpeg.verifier.get_extension(),
-                 jpegtran.lib.ffi_epeg.verifier.get_extension()],
-    install_requires=['cffi >= 0.8'],
-    setup_requires=['cffi >= 0.8']
+    package_data={'jpegtran': ['jpegtran.cdef']},
+    setup_requires=['cffi >= 1.0'],
+    install_requires=['cffi >= 1.0'],
+    cffi_modules=["jpegtran/jpegtran_build.py:ffi"]
 )

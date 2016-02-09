@@ -13,9 +13,10 @@ since the image is not being re-compressed in the process. This is due to the
 fact that all transformation operations work directly with the JPEG data.
 
 This is achieved by using multiple C routines from the Enlightenment project's
-`epeg library`_ (for scaling) and *jpegtran* from the Independent JPEG Group's
-`libjpeg`_ library (for all other operations). These routines are called from
-Python through the `CFFI`_ module, i.e. no external processes are launched.
+`epeg library`_ (for scaling) and the `turbojpeg`_ library from the
+`libjpeg-turbo`_ project (for all other operations). These routines are called
+from Python through the `CFFI`_ module, i.e. no external processes are
+launched.
 
 The package also includes rudimentary support for getting and setting the EXIF
 orientation tag, automatically transforming the image according to it and
@@ -30,15 +31,16 @@ Wand and PIL were too slow to be usable.
 .. _PIL/PIllow: http://pillow.readthedocs.org
 .. _Benchmarks: http://jpegtran-cffi.readthedocs.org/en/latest/#benchmarks
 .. _epeg library: https://github.com/mattes/epeg
-.. _libjpeg: http://en.wikipedia.org/wiki/Libjpeg
+.. _libturbojpeg: http://www.libjpeg-turbo.org/About/TurboJPEG
+.. _libjpeg-turbo: http://www.libjpeg-turbo.org/
 .. _CFFI: http://cffi.readthedocs.org
 .. _spreads: http://spreads.readthedocs.org
 
 Requirements
 ============
-- CPython 2.6, 2.7, 3.3 or PyPy
-- cffi
-- libjpeg8 with headers (earlier versions will not work)
+- CPython >=2.6 or >=3.3 or PyPy
+- cffi >= 1.0
+- libturbojpeg with headers
 
 Installation
 ============

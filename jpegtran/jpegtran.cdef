@@ -1,0 +1,60 @@
+void free(void *);
+
+typedef ... Epeg_Image;
+Epeg_Image   *epeg_file_open         (const char *file);
+Epeg_Image   *epeg_memory_open       (unsigned char *data, int size);
+void          epeg_size_get          (Epeg_Image *im, int *w, int *h);
+void          epeg_decode_size_set   (Epeg_Image *im, int w, int h);
+void          epeg_quality_set       (Epeg_Image *im, int quality);
+void          epeg_file_output_set   (Epeg_Image *im, const char *file);
+void          epeg_memory_output_set (Epeg_Image *im, unsigned char **data,
+                                        int *size);
+int           epeg_encode            (Epeg_Image *im);
+int           epeg_trim              (Epeg_Image *im);
+void          epeg_close             (Epeg_Image *im);
+
+
+enum TJXOP {
+    TJXOP_NONE,
+    TJXOP_HFLIP,
+    TJXOP_VFLIP,
+    TJXOP_TRANSPOSE,
+    TJXOP_TRANSVERSE,
+    TJXOP_ROT90,
+    TJXOP_ROT180,
+    TJXOP_ROT270
+};
+
+#define TJXOPT_PERFECT  ...
+#define TJXOPT_TRIM     ...
+#define TJXOPT_CROP     ...
+#define TJXOPT_GRAY     ...
+
+typedef struct {
+    int x;
+    int y;
+    int w;
+    int h;
+} tjregion;
+
+typedef struct tjtransform {
+    tjregion r;
+    int op;
+    int options;
+    ...;
+} tjtransform;
+
+typedef void* tjhandle;
+
+
+tjhandle tjInitTransform(void);
+int tjDecompressHeader2(tjhandle handle, unsigned char *jpegBuf,
+                        unsigned long jpegSize, int *width,
+                        int *height, int *jpegSubsamp);
+int tjTransform(tjhandle handle, unsigned char *jpegBuf,
+                unsigned long jpegSize, int n, unsigned char **dstBufs,
+                unsigned long *dstSizes, tjtransform *transforms,
+                int flags);
+int tjDestroy(tjhandle handle);
+void tjFree(unsigned char *buffer);
+char* tjGetErrorStr(void);
