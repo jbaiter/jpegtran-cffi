@@ -3,7 +3,7 @@ language: python
 addons:
     apt:
         packages:
-            - libjpeg-turbo8-deva
+            - libjpeg-turbo8-dev
             - libturbojpeg
 python:
     - "2.6"
