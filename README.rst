@@ -48,6 +48,15 @@ Installation
 ::
 
     $ pip install jpegtran-cffi
+    
+.. note::
+
+  There is a bug in some Ubuntu versions of the `libturbojpeg` package
+  that prevents the package from installing correctly. If you get the
+  error ``relocation R_X86_64_32 against .data can not be used...``, please
+  perform the following command::
+  
+      sudo ln -s /usr/lib/x86_64-linux-gnu/libturbojpeg.so.0.1.0 /usr/lib/x86_64-linux-gnu/libturbojpeg.so
 
 Usage
 =====
