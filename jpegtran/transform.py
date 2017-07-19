@@ -207,6 +207,17 @@ class JPEGImage(object):
         new._update_thumbnail()
         return new
 
+    def progressive(self):
+        """ Change the format of image to progressive
+
+        :return:        transposed image
+        :rtype:         jpegtran.JPEGImage
+
+        """
+        new = JPEGImage(blob=lib.Transformation(self.data).progressive())
+        new._update_thumbnail()
+        return new
+
     def save(self, fname):
         """ Save the image to a file
 
