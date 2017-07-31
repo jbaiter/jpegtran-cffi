@@ -265,6 +265,6 @@ class Transformation(object):
     @jpegtran_op
     def progressive(self):
         options = self._get_transformoptions()
-        options.op = lib.TJXOPT_PROGRESSIVE
-        options.op = lib.TJXOPT_COPYNONE
+        options.options = lib.TJXOPT_PROGRESSIVE
+        options.options |= lib.TJXOPT_COPYNONE
         return options, 16384
