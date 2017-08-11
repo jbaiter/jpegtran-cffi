@@ -268,3 +268,9 @@ class Transformation(object):
         options.options = lib.TJXOPT_PROGRESSIVE
         options.options |= lib.TJXOPT_COPYNONE
         return options, 16384
+
+    @jpegtran_op
+    def copynone(self):
+        options = self._get_transformoptions()
+        options.options = lib.TJXOPT_COPYNONE
+        return options, 0
