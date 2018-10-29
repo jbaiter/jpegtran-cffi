@@ -16,9 +16,10 @@ ffi = FFI()
 ffi.set_source(
     "_jpegtran", SOURCE,
     sources=["src/epeg.c"],
-    include_dirs=["src"],
+    include_dirs=["src", "/opt/libjpeg-turbo/include"],
     define_macros=[("HAVE_UNSIGNED_CHAR", "1")],
-    libraries=["jpeg", "turbojpeg"])
+    libraries=["jpeg", "turbojpeg"],
+    library_dirs=["/opt/libjpeg-turbo/lib64"])
 ffi.cdef(CDEF)
 
 if __name__ == "__main__":
