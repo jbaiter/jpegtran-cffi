@@ -1,10 +1,11 @@
-sudo: false
+dist: bionic
 language: python
 addons:
-    apt:
-        packages:
-            - libjpeg-turbo8-dev
-            - libturbojpeg
+  apt:
+    packages:
+      - libjpeg-turbo8-dev
+      - libturbojpeg0-dev
+
 python:
     - "2.6"
     - "2.7"
