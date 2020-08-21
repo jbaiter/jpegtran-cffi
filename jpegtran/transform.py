@@ -214,7 +214,7 @@ class JPEGImage(object):
         :type fname:    unicode
 
         """
-        if not re.match(r'^.*\.jp[e]*g$', fname.lower()):
+        if not re.match(r'^.*\.jp[e]*g$', str(fname).lower()):
             raise ValueError("fname must refer to a JPEG file, i.e. end with "
                              "'.jpg' or '.jpeg'")
         with open(fname, 'wb') as fp:
