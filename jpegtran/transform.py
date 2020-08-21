@@ -1,4 +1,4 @@
-import re
+from pathlib import Path
 
 import jpegtran.lib as lib
 
@@ -209,10 +209,11 @@ class JPEGImage(object):
         """ Save the image to a file
 
         :param fname:   Path to file
-        :type fname:    str
+        :type fname:    str or pathlib.Path
 
         """
-        if not re.match(r'^.*\.jp[e]*g$', fname.lower()):
+        fname = Path(fname)
+        if not fname.suffix.lower() in ('.jpg', '.jpeg'):
             raise ValueError("fname must refer to a JPEG file, i.e. end with "
                              "'.jpg' or '.jpeg'")
         with open(fname, 'wb') as fp:
