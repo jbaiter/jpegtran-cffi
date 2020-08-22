@@ -4,10 +4,7 @@ from setuptools import setup
 
 
 if os.path.exists('README.rst'):
-    if sys.version_info > (3,):
-        description_long = open('README.rst', encoding="utf-8").read()
-    else:
-        description_long = open('README.rst').read()
+    description_long = open('README.rst', encoding="utf-8").read()
 else:
     description_long = """
 A Python package for blazingly fast JPEG transformations. Compared to other,
@@ -28,6 +25,7 @@ setup(
     url="http://github.com/jbaiter/jpegtran-cffi.git",
     author_email="johannes.baiter@gmail.com",
     license='MIT',
+    python_requires=">=3.5",
     packages=['jpegtran'],
     package_data={'jpegtran': ['jpegtran.cdef']},
     setup_requires=['cffi >= 1.0'],

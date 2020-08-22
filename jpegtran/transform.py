@@ -1,5 +1,3 @@
-from __future__ import division
-
 import re
 
 import jpegtran.lib as lib
@@ -211,7 +209,7 @@ class JPEGImage(object):
         """ Save the image to a file
 
         :param fname:   Path to file
-        :type fname:    unicode
+        :type fname:    str
 
         """
         if not re.match(r'^.*\.jp[e]*g$', fname.lower()):

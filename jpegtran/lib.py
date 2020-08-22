@@ -6,11 +6,6 @@ from functools import wraps
 from _jpegtran import ffi, lib
 
 
-PY2 = sys.version_info < (3, 0)
-if PY2:
-    range = xrange
-
-
 _weak_keydict = weakref.WeakKeyDictionary()
 
 
@@ -114,10 +109,7 @@ class Exif(object):
     def _unpack(self, fmt, offset):
         if '>' not in fmt and '<' not in fmt:
             fmt = ('>' if self._motorola else '<')+fmt
-        if PY2:
-            return struct.unpack_from(fmt, buffer(self._buf), offset)[0]
-        else:
-            return struct.unpack_from(fmt, self._buf, offset)[0]
+        return struct.unpack_from(fmt, self._buf, offset)[0]
 
     def _pack(self, fmt, offset, value):
         if '>' not in fmt and '<' not in fmt:
