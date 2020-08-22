@@ -63,6 +63,6 @@ man_pages = [
 
 texinfo_documents = [
     ('index', 'jpegtran-cffi', u'jpegtran-cffi Documentation',
-     u'Johannes Baiter', 'jpegtran-cffi', 'One line description of project.',
+     u'Johannes Baiter', 'jpegtran-cffi', 'Extremly fast, (mostly) lossless JPEG transformations.',
      'Miscellaneous'),
 ]
