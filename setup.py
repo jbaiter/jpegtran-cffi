@@ -28,7 +28,6 @@ setup(
     python_requires=">=3.5",
     packages=['jpegtran'],
     package_data={'jpegtran': ['jpegtran.cdef']},
-    setup_requires=['cffi >= 1.0'],
-    install_requires=['cffi >= 1.0'],
+    install_requires=['cffi>=1.4.1'],
     cffi_modules=["jpegtran/jpegtran_build.py:ffi"]
 )
