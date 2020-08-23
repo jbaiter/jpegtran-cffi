@@ -24,7 +24,7 @@ project, where a large number of images from digital cameras had to be
 prepared for display by a Raspberry Pi. With the Pi's rather slow ARMv6
 processor, both Wand and PIL were too slow to be usable.
 
-Supported Python versions are CPython 2.7 and 3.5, as well as PyPy.
+Supported Python versions are CPython 3.5 and greater, as well as PyPy.
 
 The source code is under the MIT license and can be found on GitHub_.
 
@@ -39,7 +39,7 @@ The source code is under the MIT license and can be found on GitHub_.
 
 Requirements
 ============
-- CPython 2.7, 3.5 or PyPy
+- CPython >=3.5 or PyPy
 - cffi
 - **libjpeg8** with headers (v6 will not work) *or* **libjpeg-turbo** with
   *turbojpeg* headers

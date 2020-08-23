@@ -38,7 +38,7 @@ Wand and PIL were too slow to be usable.
 
 Requirements
 ============
-- CPython >=2.7 or >=3.5 or PyPy
+- CPython >=3.5 or PyPy
 - cffi >= 1.0
 - libturbojpeg with headers
 
