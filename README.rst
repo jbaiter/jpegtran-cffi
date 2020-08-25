@@ -28,13 +28,13 @@ for display by a Raspberry Pi. With the Pi's rather slow ARMv6 processor, both
 Wand and PIL were too slow to be usable.
 
 .. _wand-py: http://wand-py.org
-.. _PIL/PIllow: http://pillow.readthedocs.org
-.. _Benchmarks: http://jpegtran-cffi.readthedocs.org/en/latest/#benchmarks
+.. _PIL/PIllow: https://pillow.readthedocs.io
+.. _Benchmarks: https://jpegtran-cffi.readthedocs.io/en/latest/#benchmarks
 .. _epeg library: https://github.com/mattes/epeg
 .. _libturbojpeg: http://www.libjpeg-turbo.org/About/TurboJPEG
 .. _libjpeg-turbo: http://www.libjpeg-turbo.org/
-.. _CFFI: http://cffi.readthedocs.org
-.. _spreads: http://spreads.readthedocs.org
+.. _CFFI: https://cffi.readthedocs.io
+.. _spreads: https://spreads.readthedocs.io
 
 Requirements
 ============
@@ -100,7 +100,7 @@ Usage
 
 For more details, refer to the `API Reference`_.
 
-.. _API Reference: http://jpegtran-cffi.readthedocs.org/en/latest/#api-reference
+.. _API Reference: https://jpegtran-cffi.readthedocs.io/en/latest/#api-reference
 
 Benchmarks
 ==========
@@ -109,7 +109,7 @@ HDD with the following 2560x1920 8bit RGB JPEG:
 
 http://upload.wikimedia.org/wikipedia/commons/8/82/Mandel_zoom_05_tail_part.jpg
 
-.. figure:: http://jpegtran-cffi.readthedocs.org/en/latest/_images/benchmark.png
+.. figure:: https://jpegtran-cffi.readthedocs.io/en/latest/_images/benchmark.png
 
     Both wand-py and PIL were run with the fastest scaling algorithm available,
     for wand-py this meant using ``Image.sample`` instead of ``Image.resize``

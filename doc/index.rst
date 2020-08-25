@@ -30,11 +30,11 @@ The source code is under the MIT license and can be found on GitHub_.
 
 .. _jpegtran_cffi: http://github.com/jbaiter/jpegtran-cffi
 .. _wand-py: http://wand-py.org
-.. _PIL/PIllow: http://pillow.readthedocs.org
+.. _PIL/PIllow: https://pillow.readthedocs.io
 .. _epeg library: https://github.com/mattes/epeg
 .. _libjpeg: http://en.wikipedia.org/wiki/Libjpeg
-.. _CFFI: http://cffi.readthedocs.org
-.. _spreads: http://spreads.readthedocs.org
+.. _CFFI: https://cffi.readthedocs.io
+.. _spreads: https://spreads.readthedocs.io
 .. _GitHub: http://github.com/jbaiter/jpegtran-cffi
 
 Requirements
