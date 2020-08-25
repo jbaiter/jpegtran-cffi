@@ -37,9 +37,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 project = u'jpegtran-cffi'
-copyright = u'2014, Johannes Baiter'
-version = '0.3'
-release = '0.3.1'
+copyright = u'2014-2017, Johannes Baiter'
+version = '0.6a1'
+release = '0.6a1'
 
 exclude_patterns = ['_build']
 pygments_style = 'sphinx'
@@ -63,6 +63,6 @@ man_pages = [
 
 texinfo_documents = [
     ('index', 'jpegtran-cffi', u'jpegtran-cffi Documentation',
-     u'Johannes Baiter', 'jpegtran-cffi', 'One line description of project.',
+     u'Johannes Baiter', 'jpegtran-cffi', 'Extremly fast, (mostly) lossless JPEG transformations.',
      'Miscellaneous'),
 ]
