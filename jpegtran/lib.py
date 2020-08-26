@@ -145,7 +145,11 @@ def jpegtran_op(func):
         tjhandle = ffi.gc(lib.tjInitTransform(), lib.tjDestroy)
 
         # Call the wrapped function with the transformoption struct
-        transformoption, flag = func(self, *args, **kwargs)
+        transformoption = func(self, *args, **kwargs)
+        if transformoption.options & lib.TJXOPT_PROGRESSIVE:
+            flag = 16384
+        else:
+            flag = 0
 
         # Execute transformation
         rv = lib.tjTransform(tjhandle, in_data_p, in_data_len, 1,
@@ -212,7 +216,7 @@ class Transformation(object):
     def grayscale(self):
         options = self._get_transformoptions()
         options.options = lib.TJXOPT_GRAY
-        return options, 0
+        return options
 
     @jpegtran_op
     def rotate(self, angle):
@@ -225,7 +229,7 @@ class Transformation(object):
             options.op = lib.TJXOP_ROT270
         else:
             raise ValueError("Invalid angle, must be -90, 90, 180 or 270")
-        return options, 0
+        return options
 
     @jpegtran_op
     def flip(self, direction):
@@ -237,19 +241,19 @@ class Transformation(object):
         else:
             raise ValueError("Invalid direction, must be 'vertical' or "
                              "'horizontal'")
-        return options, 0
+        return options
 
     @jpegtran_op
     def transpose(self):
         options = self._get_transformoptions()
         options.op = lib.TJXOP_TRANSPOSE
-        return options, 0
+        return options
 
     @jpegtran_op
     def transverse(self):
         options = self._get_transformoptions()
         options.op = lib.TJXOP_TRANSVERSE
-        return options, 0
+        return options
 
     @jpegtran_op
     def crop(self, x, y, width, height):
@@ -260,17 +264,18 @@ class Transformation(object):
         options.r.x = x
         options.r.y = y
         options.options = lib.TJXOPT_CROP
-        return options, 0
+        return options
 
     @jpegtran_op
-    def progressive(self):
+    def progressive(self, copynone=False):
         options = self._get_transformoptions()
         options.options = lib.TJXOPT_PROGRESSIVE
-        options.options |= lib.TJXOPT_COPYNONE
-        return options, 16384
+        if copynone:
+            options.options |= lib.TJXOPT_COPYNONE
+        return options
 
     @jpegtran_op
     def copynone(self):
         options = self._get_transformoptions()
         options.options = lib.TJXOPT_COPYNONE
-        return options, 0
+        return options
