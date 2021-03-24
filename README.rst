@@ -78,12 +78,12 @@ Usage
     thumb = img.exif_thumbnail
 
     # Transforming the image
-    img.scale(320, 240).save('scaled.jpg')
+    img.downscale(320, 240).save('scaled.jpg')
     img.rotate(90).save('rotated.jpg')
     img.crop(0, 0, 100, 100).save('cropped.jpg')
 
     # Transformations can be chained
-    data = (img.scale(320, 240)
+    data = (img.downscale(320, 240)
                 .rotate(90)
                 .flip('horizontal')
                 .as_blob())
