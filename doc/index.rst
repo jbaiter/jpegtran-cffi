@@ -136,6 +136,20 @@ On imgur: http://imgur.com/a/JvAtM
 Change Log
 ==========
 
+0.5.3.dev
+---------
+- Notice: this will be the last minor release to support Python 2
+- Replace docs reference to `scale` with `downscale`
+- Fix saving with file name given as `pathlib.Path`
+- depend on CFFI >= 1.0
+- remove libjpeg8 backend
+
+
+0.5.2
+-----
+- Fix saving files in binary mode
+- Other misc fixes
+
 0.5.1
 -----
 - Fix for a memory leak (Thanks to Stephane Boisson)
