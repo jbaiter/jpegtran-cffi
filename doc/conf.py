@@ -38,8 +38,8 @@ master_doc = 'index'
 
 project = u'jpegtran-cffi'
 copyright = u'2014-2017, Johannes Baiter'
-version = '0.6a1'
-release = '0.6a1'
+version = '0.5.3.dev'
+release = '0.5.3.dev'
 
 exclude_patterns = ['_build']
 pygments_style = 'sphinx'
