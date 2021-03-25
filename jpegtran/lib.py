@@ -2,6 +2,7 @@ import struct
 import sys
 import weakref
 from functools import wraps
+from warnings import warn
 
 from _jpegtran import ffi, lib
 
@@ -151,8 +152,11 @@ def jpegtran_op(func):
         rv = lib.tjTransform(tjhandle, in_data_p, in_data_len, 1,
                              out_bufs, out_sizes, transformoption, 0)
         if rv < 0:
-            raise Exception("Transformation failed: {0}"
-                            .format(ffi.string(lib.tjGetErrorStr())))
+            err_str =  ffi.string(lib.tjGetErrorStr()).decode('ascii')
+            if "extraneous bytes before marker" in err_str:
+                warn("Transformation warning: {0}".format(err_str), RuntimeWarning)
+            else:
+                raise Exception("Transformation failed: {0}".format(err_str))
 
         _weak_keydict[out_bufs[0]] = out_bufs
         return bytearray(ffi.buffer(out_bufs[0], out_sizes[0])[:])
