@@ -146,10 +146,14 @@ def jpegtran_op(func):
 
         # Call the wrapped function with the transformoption struct
         transformoption = func(self, *args, **kwargs)
+        if transformoption.options & lib.TJXOPT_PROGRESSIVE:
+            flag = 16384
+        else:
+            flag = 0
 
         # Execute transformation
         rv = lib.tjTransform(tjhandle, in_data_p, in_data_len, 1,
-                             out_bufs, out_sizes, transformoption, 0)
+                             out_bufs, out_sizes, transformoption, flag)
         if rv < 0:
             raise Exception("Transformation failed: {0}"
                             .format(ffi.string(lib.tjGetErrorStr())))
@@ -260,4 +264,18 @@ class Transformation(object):
         options.r.x = x
         options.r.y = y
         options.options = lib.TJXOPT_CROP
+        return options
+
+    @jpegtran_op
+    def progressive(self, copynone=False):
+        options = self._get_transformoptions()
+        options.options = lib.TJXOPT_PROGRESSIVE
+        if copynone:
+            options.options |= lib.TJXOPT_COPYNONE
+        return options
+
+    @jpegtran_op
+    def copynone(self):
+        options = self._get_transformoptions()
+        options.options = lib.TJXOPT_COPYNONE
         return options

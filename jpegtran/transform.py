@@ -207,6 +207,30 @@ class JPEGImage(object):
         new._update_thumbnail()
         return new
 
+    def progressive(self, copynone=True):
+        """ Change the format of image to progressive
+
+        :param copynone:    If do copynone after progressive
+        :type copynone:     bool
+        :return:        transposed image
+        :rtype:         jpegtran.JPEGImage
+
+        """
+        new = JPEGImage(blob=lib.Transformation(self.data).progressive(copynone=copynone))
+        new._update_thumbnail()
+        return new
+
+    def copynone(self):
+        """ Change the format of image to progressive
+
+        :return:        transposed image
+        :rtype:         jpegtran.JPEGImage
+
+        """
+        new = JPEGImage(blob=lib.Transformation(self.data).copynone())
+        new._update_thumbnail()
+        return new
+
     def save(self, fname):
         """ Save the image to a file
 

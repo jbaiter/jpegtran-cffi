@@ -105,3 +105,31 @@ def test_downscale(image):
     scaled = image.downscale(240, 180)
     assert scaled.width == 240
     assert scaled.height == 180
+
+def test_copynone(image):
+    assert image.exif_orientation is not None
+    copynone = image.copynone()
+    assert copynone.exif_orientation is None
+
+def test_progressive(image):
+    assert is_progressive(image.data) == False
+    image = image.progressive(copynone=True)
+    image.save('test/test_progressive.jpg')
+    assert is_progressive(image.data) == True
+    assert image.exif_orientation is None
+
+def test_progressive_copynone(image):
+    assert is_progressive(image.data) == False
+    image = image.progressive(copynone=False)
+    image.save('test/test_progressive_none.jpg')
+    assert is_progressive(image.data) == True
+    assert image.exif_orientation is not None
+
+def is_progressive(data):
+    try:
+        data.index(b'\xff\xc2')
+        return True
+    except:
+        return False
+
+
