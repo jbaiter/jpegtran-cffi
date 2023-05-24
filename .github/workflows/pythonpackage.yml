@@ -1,0 +1,81 @@
+name: Python package
+
+on:
+  push:
+  release:
+    types:
+      - published
+
+jobs:
+  build_wheels_linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'true'
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v2.12.3
+      env:
+        CIBW_BEFORE_ALL: "sh linux-build.sh"
+        CIBW_BEFORE_BUILD: echo {project}/binaries
+        CIBW_SKIP: "cp36-* pp*"
+        CIBW_ARCHS_LINUX: auto64
+        CIBW_REPAIR_WHEEL_COMMAND: "LD_LIBRARY_PATH=/project/binaries auditwheel repair -w {dest_dir} {wheel}"
+    - uses: actions/upload-artifact@v3
+      with:
+        path: ./wheelhouse/*.whl
+
+  build_wheels_windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch:
+          - AMD64
+          - x86
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'true'
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.8' 
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.arch }}
+    - name: Build dependencies
+      shell: cmd
+      run: |
+        python get-nasm.py ${{ matrix.arch }}
+        set path=%path%;%CD%\nasm-2.14.02
+        mkdir binaries
+        cd binaries
+        cmake -G"NMake Makefiles" -DCMAKE_BUILD_TYPE=Release ../libjpeg-turbo
+        nmake
+        cd ..
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v2.12.3
+      env:
+        CIBW_SKIP: cp36-* pp*
+        CIBW_ARCHS_WINDOWS: ${{ matrix.arch }}
+        CIBW_BEFORE_BUILD_WINDOWS: "python -m pip install delvewheel"
+        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "python -m delvewheel repair -w {dest_dir} {wheel} --add-path binaries"
+    - uses: actions/upload-artifact@v3
+      with:
+        path: ./wheelhouse/*.whl
+
+
+  upload-pypi:
+    if: github.event_name == 'release' && github.event.action == 'published'
+    needs: [build_wheels_linux, build_wheels_windows]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}

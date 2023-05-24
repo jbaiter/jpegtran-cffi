@@ -1,3 +1,7 @@
 *.pyc
 __pycache__
 doc/_*
+
+build/
+binaries/
+CMakeFiles/
