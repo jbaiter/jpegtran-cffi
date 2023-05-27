@@ -20,7 +20,7 @@ transformation operations work directly with the JPEG data.
 """
 
 setup(
-    name='jpegtran-cffi',
+    name='jpegtran-cffi-wheels',
     version="0.5.3.dev",
     description=("Extremly fast, (mostly) lossless JPEG transformations"),
     long_description=long_description,
