@@ -31,7 +31,7 @@ Wand and PIL were too slow to be usable.
 .. _PIL/PIllow: https://pillow.readthedocs.io
 .. _Benchmarks: https://jpegtran-cffi.readthedocs.io/en/latest/#benchmarks
 .. _epeg library: https://github.com/mattes/epeg
-.. _libturbojpeg: http://www.libjpeg-turbo.org/About/TurboJPEG
+.. _turbojpeg: http://www.libjpeg-turbo.org/About/TurboJPEG
 .. _libjpeg-turbo: http://www.libjpeg-turbo.org/
 .. _CFFI: https://cffi.readthedocs.io
 .. _spreads: https://spreads.readthedocs.io
