@@ -260,6 +260,12 @@ class Transformation(object):
         width = int(np.ceil(width))
         height = int(np.ceil(height))
 
+        # Upper left corner has to be a multiple of 16 to match jpeg block
+        mod_x = x % 16
+        mod_y = y % 16
+        x -= mod_x
+        y -= mod_y
+        
         options = self._get_transformoptions()
         options.r = ffi.new("tjregion*")[0]
         options.r.w = width
