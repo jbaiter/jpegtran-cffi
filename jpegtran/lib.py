@@ -1,6 +1,7 @@
 import struct
 import sys
 import weakref
+import numpy as np
 from functools import wraps
 
 from _jpegtran import ffi, lib
@@ -253,6 +254,22 @@ class Transformation(object):
 
     @jpegtran_op
     def crop(self, x, y, width, height):
+        # Round towards the larger box
+        x = int(np.floor(x))
+        y = int(np.floor(y))
+        width = int(np.ceil(width))
+        height = int(np.ceil(height))
+
+        # Upper left corner has to be a multiple of 16 to match jpeg block
+        mod_x = x % 16
+        mod_y = y % 16
+
+        # Add modulo to all sides for uniform expansion
+        x -= mod_x
+        y -= mod_y
+        width += 2 * mod_x
+        height += 2 * mod_x
+        
         options = self._get_transformoptions()
         options.r = ffi.new("tjregion*")[0]
         options.r.w = width
