@@ -263,8 +263,12 @@ class Transformation(object):
         # Upper left corner has to be a multiple of 16 to match jpeg block
         mod_x = x % 16
         mod_y = y % 16
+
+        # Add modulo to all sides for uniform expansion
         x -= mod_x
         y -= mod_y
+        width += 2 * mod_x
+        height += 2 * mod_x
         
         options = self._get_transformoptions()
         options.r = ffi.new("tjregion*")[0]
